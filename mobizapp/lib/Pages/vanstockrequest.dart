@@ -22,6 +22,7 @@ class VanStockRequestsScreen extends StatefulWidget {
 
 class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
   bool _initDone = false;
+  bool _nodata = false;
   RequestModel request = RequestModel();
   final TextEditingController _searchData = TextEditingController();
   bool _search = false;
@@ -98,7 +99,7 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              (_initDone)
+              (_initDone && !_nodata)
                   ? SizedBox(
                       height: SizeConfig.blockSizeVertical * 85,
                       child: ListView.separated(
@@ -110,34 +111,44 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
                             _requestsTab(index, request.data![index]),
                       ),
                     )
-                  : Shimmer.fromColors(
-                      baseColor: AppConfig.buttonDeactiveColor.withOpacity(0.1),
-                      highlightColor: AppConfig.backButtonColor,
-                      child: Center(
-                        child: Column(
+                  : (_nodata && _initDone)
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                          ],
+                              CommonWidgets.verticalSpace(3),
+                              const Center(
+                                child: Text('No Data'),
+                              ),
+                            ])
+                      : Shimmer.fromColors(
+                          baseColor:
+                              AppConfig.buttonDeactiveColor.withOpacity(0.1),
+                          highlightColor: AppConfig.backButtonColor,
+                          child: Center(
+                            child: Column(
+                              children: [
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
             ],
           ),
         ),
@@ -393,7 +404,7 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
   Future<void> _getRequests() async {
     RestDatasource api = RestDatasource();
     dynamic resJson = await api.getDetails(
-        '/api/vanrequest.index?store_id=${AppState().storeId}&van_id=1}',
+        '/api/vanrequest.index?store_id=${AppState().storeId}&van_id=1',
         AppState().token);
 
     if (resJson['data'] != null) {
@@ -403,6 +414,11 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
           _initDone = true;
         },
       );
+    } else {
+      setState(() {
+        _initDone = true;
+        _nodata = true;
+      });
     }
   }
 

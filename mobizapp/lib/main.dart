@@ -7,6 +7,7 @@ import 'package:mobizapp/Pages/salesscreen.dart';
 import 'package:mobizapp/Pages/selectProducts.dart';
 import 'package:mobizapp/Pages/splashscreen.dart';
 import 'package:mobizapp/Pages/vanstock.dart';
+import 'package:mobizapp/Pages/vanstockdata.dart';
 import 'package:mobizapp/Pages/vanstockrequest.dart';
 
 void main() {
@@ -31,12 +32,14 @@ class MyApp extends StatelessWidget {
           LoginScreen.routeName: (context) => LoginScreen(),
           HomeScreen.routeName: (context) => HomeScreen(),
           ProductsScreen.routeName: (context) => ProductsScreen(),
-          VanStockRequestsScreen.routeName:(context) => VanStockRequestsScreen(),
-          VanStocks.routeName:(context)=>VanStocks(),
-          SplashScreen.routeName:(context) => SplashScreen(),
-          SelectProductsScreen.routeName:(context) => SelectProductsScreen(),
-          CustomersDataScreen.routeName:(context) => CustomersDataScreen(),
-          SalesScreen.routeName:(context) => SalesScreen(),
+          VanStockRequestsScreen.routeName: (context) =>
+              VanStockRequestsScreen(),
+          VanStocks.routeName: (context) => VanStocks(),
+          SplashScreen.routeName: (context) => SplashScreen(),
+          SelectProductsScreen.routeName: (context) => SelectProductsScreen(),
+          CustomersDataScreen.routeName: (context) => CustomersDataScreen(),
+          SalesScreen.routeName: (context) => SalesScreen(),
+          VanStockScreen.routeName: (context) => VanStockScreen()
         });
   }
 }

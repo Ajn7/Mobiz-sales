@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:mobizapp/Models/appstate.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../Models/ProductsModelClass.dart';
+import '../Models/ProductDataModelClass.dart';
 import '../Utilities/rest_ds.dart';
 import '../confg/appconfig.dart';
 import '../confg/sizeconfig.dart';
@@ -19,8 +18,9 @@ class ProductsScreen extends StatefulWidget {
 
 class _ProductsScreenState extends State<ProductsScreen> {
   final TextEditingController _searchData = TextEditingController();
-  ProductsModel products = ProductsModel();
+  ProductDataModel products = ProductDataModel();
   bool _initDone = false;
+  bool _nodata = false;
   bool _search = false;
 
   @override
@@ -83,46 +83,56 @@ class _ProductsScreenState extends State<ProductsScreen> {
           child: Column(
             children: [
               CommonWidgets.verticalSpace(1),
-              (_initDone)
+              (_initDone && !_nodata)
                   ? SizedBox(
                       height: SizeConfig.blockSizeVertical * 78,
                       child: ListView.separated(
                         separatorBuilder: (BuildContext context, int index) =>
                             CommonWidgets.verticalSpace(1),
-                        itemCount: products.result!.data!.length,
+                        itemCount: products.data!.length,
                         shrinkWrap: true,
                         itemBuilder: (context, index) =>
-                            _productsCard(products.result!.data![index], index),
+                            _productsCard(products.data![index], index),
                       ),
                     )
-                  : Shimmer.fromColors(
-                      baseColor: AppConfig.buttonDeactiveColor.withOpacity(0.1),
-                      highlightColor: AppConfig.backButtonColor,
-                      child: Center(
-                        child: Column(
+                  : (_nodata && _initDone)
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                          ],
+                              CommonWidgets.verticalSpace(3),
+                              const Center(
+                                child: Text('No Data'),
+                              ),
+                            ])
+                      : Shimmer.fromColors(
+                          baseColor:
+                              AppConfig.buttonDeactiveColor.withOpacity(0.1),
+                          highlightColor: AppConfig.backButtonColor,
+                          child: Center(
+                            child: Column(
+                              children: [
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
             ],
           ),
         ),
@@ -166,13 +176,13 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    data.itemId.toString(),
+                    data.id.toString(),
                     style: TextStyle(
                         fontSize: AppConfig.paragraphSize,
                         fontWeight: AppConfig.headLineWeight),
                   ),
                   Text(
-                    data.products![0].name!,
+                    data.name!,
                     style: TextStyle(fontSize: AppConfig.textCaption3Size),
                   ),
                   Row(
@@ -212,12 +222,15 @@ class _ProductsScreenState extends State<ProductsScreen> {
         '/api/get_product?store_id=${AppState().storeId}', AppState().token);
 
     if (resJson['data'] != null) {
-      products = ProductsModel.fromJson(resJson);
-      setState(
-        () {
-          _initDone = true;
-        },
-      );
+      products = ProductDataModel.fromJson(resJson);
+      setState(() {
+        _initDone = true;
+      });
+    } else {
+      setState(() {
+        _initDone = true;
+        _nodata = true;
+      });
     }
   }
 }

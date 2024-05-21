@@ -32,12 +32,12 @@ class RestDatasource {
     String timeZone = await FlutterTimezone.getLocalTimezone();
     Map<String, String> header;
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    print("Felixa:App Version");
+ 
     // print("Is Production ${EnvironmentConfig.IsProduction} Server $BASE_URL");
 
     buildNumber = packageInfo.buildNumber;
     appVersion = packageInfo.version;
-    print("Felixa:App Version $appVersion");
+  
     print("Build Number $buildNumber");
     print("Os type $osType");
     print("Time Zone $timeZone");

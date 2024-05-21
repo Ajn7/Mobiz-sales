@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobizapp/Models/appstate.dart';
-import 'package:mobizapp/Models/quantitymodel.dart' as Qty;
 import 'package:mobizapp/Pages/vanstock.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../Models/ProductsModelClass.dart';
+import '../Models/ProductDataModelClass.dart';
 import '../Models/stockData.dart';
 import '../Utilities/rest_ds.dart';
 import '../confg/appconfig.dart';
@@ -21,9 +20,9 @@ class SelectProductsScreen extends StatefulWidget {
 
 class _SelectProductsScreenState extends State<SelectProductsScreen> {
   final TextEditingController _searchData = TextEditingController();
-  ProductsModel products = ProductsModel();
-  Qty.QuantityModel qunatityData = Qty.QuantityModel();
+  ProductDataModel products = ProductDataModel();
   bool _initDone = false;
+  bool _noData = false;
   List<int> selectedItems = [];
   List<Map<String, dynamic>> items = [];
   bool _search = false;
@@ -118,46 +117,56 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
           child: Column(
             children: [
               CommonWidgets.verticalSpace(1),
-              (_initDone)
+              (_initDone && !_noData)
                   ? SizedBox(
                       height: SizeConfig.blockSizeVertical * 78,
                       child: ListView.separated(
                         separatorBuilder: (BuildContext context, int index) =>
                             CommonWidgets.verticalSpace(1),
-                        itemCount: products.result!.data!.length,
+                        itemCount: products.data!.length,
                         shrinkWrap: true,
                         itemBuilder: (context, index) =>
-                            _productsCard(products.result!.data![index], index),
+                            _productsCard(products.data![index], index),
                       ),
                     )
-                  : Shimmer.fromColors(
-                      baseColor: AppConfig.buttonDeactiveColor.withOpacity(0.1),
-                      highlightColor: AppConfig.backButtonColor,
-                      child: Center(
-                        child: Column(
+                  : (_noData && _initDone)
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                            CommonWidgets.loadingContainers(
-                                height: SizeConfig.blockSizeVertical * 10,
-                                width: SizeConfig.blockSizeHorizontal * 90),
-                          ],
+                              CommonWidgets.verticalSpace(3),
+                              const Center(
+                                child: Text('No Data'),
+                              ),
+                            ])
+                      : Shimmer.fromColors(
+                          baseColor:
+                              AppConfig.buttonDeactiveColor.withOpacity(0.1),
+                          highlightColor: AppConfig.backButtonColor,
+                          child: Center(
+                            child: Column(
+                              children: [
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                                CommonWidgets.loadingContainers(
+                                    height: SizeConfig.blockSizeVertical * 10,
+                                    width: SizeConfig.blockSizeHorizontal * 90),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
             ],
           ),
         ),
@@ -170,16 +179,17 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
       onTap: () {
         setState(() {
           if (selectedItems.contains(index)) {
-            int id = data.itemId!;
+            int id = data.id!;
             removeItem(id);
             selectedItems.remove(index);
           } else {
             selectedItems.add(index);
             addItem(
-              data.products![0].name!,
-              data.products![0].code!,
-              data.itemId!,
-              data.quandity!,
+              data.name!,
+              data.code!,
+              data.id!,
+              data.baseUnitQty!,
+              data.baseUnitId!,
             );
 
             Navigator.pushReplacementNamed(context, VanStocks.routeName);
@@ -228,26 +238,26 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      data.itemId.toString(),
+                      data.id.toString(),
                       style: TextStyle(
                           fontSize: AppConfig.paragraphSize,
                           fontWeight: AppConfig.headLineWeight),
                     ),
                     Text(
-                      (data.products![0].name ?? ''),
+                      (data.name ?? ''),
                       style: TextStyle(fontSize: AppConfig.textCaption3Size),
                     ),
                     Row(
                       children: [
-                        for (int i = 0;
-                            i < qunatityData.result!.data!.length;
-                            i++)
-                          Text(
-                            '${qunatityData.result!.data![i].units![0].name}: ${products.result!.data![0].quandity! / qunatityData.result!.data![i].qty!} |',
-                            style: TextStyle(
-                                fontSize: AppConfig.textCaption3Size,
-                                fontWeight: AppConfig.headLineWeight),
-                          ),
+                        // for (int i = 0;
+                        //     i < qunatityData.result!.data!.length;
+                        //     i++)
+                        Text(
+                          'Quantity: ${data.baseUnitQty}',
+                          style: TextStyle(
+                              fontSize: AppConfig.textCaption3Size,
+                              fontWeight: AppConfig.headLineWeight),
+                        ),
                       ],
                     )
                   ],
@@ -263,37 +273,29 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
   Future<void> _getProducts() async {
     RestDatasource api = RestDatasource();
     dynamic resJson = await api.getDetails(
-        '/api/get_van_stock?store_id=2&van_id=1',
-        AppState().token); //${AppState().storeId}
-    if (resJson['status'] == "success") {
-      products = ProductsModel.fromJson(resJson);
-      _getQuantity();
+        '/api/get_product?store_id=${AppState().storeId}', AppState().token); //
+
+    if (resJson['data'] != null) {
+      products = ProductDataModel.fromJson(resJson);
+      setState(() {
+        _initDone = true;
+      });
+    } else {
+      setState(() {
+        _noData = true;
+        _initDone = true;
+      });
     }
   }
 
-  Future<void> _getQuantity() async {
-    RestDatasource api = RestDatasource();
-    dynamic resJson = await api.getDetails(
-        '/api/get_van_stock_detail?product_id=${products.result!.data![0].itemId}',
-        AppState().token); //${AppState().storeId}
-    print('Responsde Details ${resJson}');
-
-    if (resJson['status'] == "success") {
-      qunatityData = Qty.QuantityModel.fromJson(resJson);
-      setState(
-        () {
-          _initDone = true;
-        },
-      );
-    }
-  }
-
-  void addItem(String name, String code, int id, int quantity) async {
+  void addItem(
+      String name, String code, int id, int quantity, int baseUnit) async {
     Map<String, dynamic> newItem = {
       "name": name,
       "code": code,
       "id": id,
-      "quantity": quantity
+      "quantity": quantity,
+      "unit": baseUnit
     };
 
     // Check for duplicates before adding

@@ -7,6 +7,7 @@ import 'package:mobizapp/Pages/loginpage.dart';
 import 'package:mobizapp/Pages/productspage.dart';
 import 'package:mobizapp/Pages/selectProducts.dart';
 import 'package:mobizapp/Pages/vanstock.dart';
+import 'package:mobizapp/Pages/vanstockdata.dart';
 import 'package:mobizapp/Pages/vanstockrequest.dart';
 import 'package:mobizapp/Utilities/sharepref.dart';
 import 'package:mobizapp/confg/appconfig.dart';
@@ -126,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         GestureDetector(
                           onTap: () => Navigator.pushNamed(
-                              context, SelectProductsScreen.routeName),
+                              context, VanStockScreen.routeName),
                           child: _iconButtons(
                               icon: Icons.directions_bus, title: 'Van Stock'),
                         ),
@@ -291,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Container(
             width: SizeConfig.safeBlockHorizontal! * 30,
             height: SizeConfig.safeBlockVertical! * 5,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(25.0)),
                 color: AppConfig.colorSuccess),
             child: Center(
