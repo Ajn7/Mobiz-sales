@@ -9,6 +9,7 @@ import '../Utilities/rest_ds.dart';
 import '../confg/appconfig.dart';
 import '../confg/sizeconfig.dart';
 import '../Components/commonwidgets.dart';
+import '../Models/quantitymodel.dart' as Qty;
 
 class SelectProductsScreen extends StatefulWidget {
   static const routeName = "/SelectProductScreen";
@@ -26,6 +27,9 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
   List<int> selectedItems = [];
   List<Map<String, dynamic>> items = [];
   bool _search = false;
+
+  Qty.QuantityModel qunatityData = Qty.QuantityModel();
+  List<Qty.QuantityModel> quantity = [];
   @override
   void initState() {
     super.initState();
@@ -249,15 +253,21 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
                     ),
                     Row(
                       children: [
-                        // for (int i = 0;
-                        //     i < qunatityData.result!.data!.length;
-                        //     i++)
-                        Text(
-                          'Quantity: ${data.baseUnitQty}',
-                          style: TextStyle(
-                              fontSize: AppConfig.textCaption3Size,
-                              fontWeight: AppConfig.headLineWeight),
-                        ),
+                        for (int i = 0;
+                            i < quantity[index].result!.data!.length;
+                            i++)
+                          Text(
+                            (i == 0)
+                                ? '${quantity[index].result!.data![i].units![0].name!}: ${formatDivisionResult(products.data![index].baseUnitQty!, quantity[index].result!.data![i].qty!, quantity[index].result!.data![i].units![0].name!)}'
+                                : (i == 1)
+                                    ? '| ${quantity[index].result!.data![i].units![0].name!}: ${formatDivisionResult(products.data![index].secondUnitQty!, quantity[index].result!.data![i].qty!, quantity[index].result!.data![i].units![0].name!)} '
+                                    : (i == 2)
+                                        ? '| ${quantity[index].result!.data![i].units![0].name!}: ${formatDivisionResult(products.data![index].thirdUnitQty!, quantity[index].result!.data![i].qty!, quantity[index].result!.data![i].units![0].name!)}'
+                                        : '| ${quantity[index].result!.data![i].units![0].name!}: ${formatDivisionResult(products.data![index].fourthUnitQty!, quantity[index].result!.data![i].qty!, quantity[index].result!.data![i].units![0].name!)}',
+                            style: TextStyle(
+                                fontSize: AppConfig.textCaption3Size,
+                                fontWeight: AppConfig.headLineWeight),
+                          ),
                       ],
                     )
                   ],
@@ -277,9 +287,9 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
 
     if (resJson['data'] != null) {
       products = ProductDataModel.fromJson(resJson);
-      setState(() {
-        _initDone = true;
-      });
+      for (int i = 0; i < products.data!.length; i++) {
+        _getQuantity(i, products.data![0].id!);
+      }
     } else {
       setState(() {
         _noData = true;
@@ -309,5 +319,47 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
   // Function to remove an item from the list by id
   void removeItem(int id) {
     items.removeWhere((item) => item['id'] == id);
+  }
+
+  Future<void> _getQuantity(int i, int id) async {
+    RestDatasource api = RestDatasource();
+    dynamic resJson = await api.getDetails(
+        '/api/get_van_stock_detail?product_id=$id',
+        AppState().token); //${AppState().storeId}
+
+    if (resJson['status'] == "success") {
+      qunatityData = Qty.QuantityModel.fromJson(resJson);
+      quantity.add(qunatityData);
+      if (i == products.data!.length - 1) {
+        setState(
+          () {
+            _initDone = true;
+          },
+        );
+      }
+    }
+  }
+
+  String formatDivisionResult(int numerator, int denominator, String name) {
+    if (denominator == 0) {
+      throw ArgumentError("Denominator cannot be zero.");
+    }
+
+    double result = numerator / denominator;
+
+    result = double.parse(result.toStringAsFixed(1));
+
+    int integerPart = result.floor();
+    double fractionalPart = result - integerPart;
+
+    int fractionalPartInPieces = (fractionalPart * 10).round();
+
+    if (fractionalPartInPieces != 0) {
+      return (integerPart != 0)
+          ? "$integerPart $name $fractionalPartInPieces Piece"
+          : "$fractionalPartInPieces Piece";
+    } else {
+      return "$integerPart";
+    }
   }
 }

@@ -186,7 +186,7 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
                     child: Row(
                       children: [
                         Text(
-                          'VS0${data.detail![0].vanRequestId}',
+                          '${data.invoiceNo}',
                           style:
                               TextStyle(fontWeight: AppConfig.headLineWeight),
                         ),
@@ -369,32 +369,6 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
                       ],
                     ),
                   ),
-            // for (int i = 0; i < 2; i++)
-            //   ListTile(
-            //     visualDensity: VisualDensity.compact,
-            //     subtitle: Divider(),
-            //     title: Row(
-            //       children: [
-            //         Column(
-            //           children: [
-            //             Text(
-            //               'Code:${data.c}',
-            //               style: TextStyle(
-            //                   color: AppConfig.backgroundColor,
-            //                   fontSize: AppConfig.textCaption2Size),
-            //             ),
-            //           ],
-            //         ),
-            //         const Spacer(),
-            //         Text(
-            //           'Qty:100',
-            //           style: TextStyle(
-            //               color: AppConfig.backgroundColor,
-            //               fontSize: AppConfig.textCaption3Size),
-            //         )
-            //       ],
-            //     ),
-            //   ),
           ],
         ),
       ),

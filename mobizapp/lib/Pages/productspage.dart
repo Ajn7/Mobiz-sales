@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:mobizapp/Models/appstate.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../Models/appstate.dart';
 import '../Models/ProductDataModelClass.dart';
 import '../Utilities/rest_ds.dart';
 import '../confg/appconfig.dart';
 import '../confg/sizeconfig.dart';
 import '../Components/commonwidgets.dart';
+import '../Models/quantitymodel.dart' as Qty;
 
 class ProductsScreen extends StatefulWidget {
   static const routeName = "/ProductScreen";
@@ -19,6 +20,8 @@ class ProductsScreen extends StatefulWidget {
 class _ProductsScreenState extends State<ProductsScreen> {
   final TextEditingController _searchData = TextEditingController();
   ProductDataModel products = ProductDataModel();
+  Qty.QuantityModel qunatityData = Qty.QuantityModel();
+  List<Qty.QuantityModel> quantity = [];
   bool _initDone = false;
   bool _nodata = false;
   bool _search = false;
@@ -187,24 +190,21 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   ),
                   Row(
                     children: [
-                      Text(
-                        'PCS: 10 |',
-                        style: TextStyle(
-                            fontSize: AppConfig.textCaption3Size,
-                            fontWeight: AppConfig.headLineWeight),
-                      ),
-                      Text(
-                        'Box: 10 |',
-                        style: TextStyle(
-                            fontSize: AppConfig.textCaption3Size,
-                            fontWeight: AppConfig.headLineWeight),
-                      ),
-                      Text(
-                        'Container: 30',
-                        style: TextStyle(
-                            fontSize: AppConfig.textCaption3Size,
-                            fontWeight: AppConfig.headLineWeight),
-                      ),
+                      for (int i = 0;
+                          i < quantity[index].result!.data!.length;
+                          i++)
+                        Text(
+                          (i == 0)
+                              ? '${quantity[index].result!.data![i].units![0].name!}: ${formatDivisionResult(products.data![index].baseUnitQty!, quantity[index].result!.data![i].qty!, quantity[index].result!.data![i].units![0].name!)}'
+                              : (i == 1)
+                                  ? '| ${quantity[index].result!.data![i].units![0].name!}: ${formatDivisionResult(products.data![index].secondUnitQty!, quantity[index].result!.data![i].qty!, quantity[index].result!.data![i].units![0].name!)} '
+                                  : (i == 2)
+                                      ? '| ${quantity[index].result!.data![i].units![0].name!}: ${formatDivisionResult(products.data![index].thirdUnitQty!, quantity[index].result!.data![i].qty!, quantity[index].result!.data![i].units![0].name!)}'
+                                      : '| ${quantity[index].result!.data![i].units![0].name!}: ${formatDivisionResult(products.data![index].fourthUnitQty!, quantity[index].result!.data![i].qty!, quantity[index].result!.data![i].units![0].name!)}',
+                          style: TextStyle(
+                              fontSize: AppConfig.textCaption3Size,
+                              fontWeight: AppConfig.headLineWeight),
+                        ),
                     ],
                   )
                 ],
@@ -223,14 +223,56 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
     if (resJson['data'] != null) {
       products = ProductDataModel.fromJson(resJson);
-      setState(() {
-        _initDone = true;
-      });
+      for (int i = 0; i < products.data!.length; i++) {
+        _getQuantity(i, products.data![0].id!);
+      }
     } else {
       setState(() {
         _initDone = true;
         _nodata = true;
       });
+    }
+  }
+
+  Future<void> _getQuantity(int i, int id) async {
+    RestDatasource api = RestDatasource();
+    dynamic resJson = await api.getDetails(
+        '/api/get_van_stock_detail?product_id=$id',
+        AppState().token); //${AppState().storeId}
+
+    if (resJson['status'] == "success") {
+      qunatityData = Qty.QuantityModel.fromJson(resJson);
+      quantity.add(qunatityData);
+      if (i == products.data!.length - 1) {
+        setState(
+          () {
+            _initDone = true;
+          },
+        );
+      }
+    }
+  }
+
+  String formatDivisionResult(int numerator, int denominator, String name) {
+    if (denominator == 0) {
+      throw ArgumentError("Denominator cannot be zero.");
+    }
+
+    double result = numerator / denominator;
+
+    result = double.parse(result.toStringAsFixed(1));
+
+    int integerPart = result.floor();
+    double fractionalPart = result - integerPart;
+
+    int fractionalPartInPieces = (fractionalPart * 10).round();
+
+    if (fractionalPartInPieces != 0) {
+      return (integerPart != 0)
+          ? "$integerPart $name $fractionalPartInPieces Piece"
+          : "$fractionalPartInPieces Piece";
+    } else {
+      return "$integerPart";
     }
   }
 }
