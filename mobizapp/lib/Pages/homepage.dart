@@ -6,14 +6,16 @@ import 'package:mobizapp/Pages/customerscreen.dart';
 import 'package:mobizapp/Pages/loginpage.dart';
 import 'package:mobizapp/Pages/productspage.dart';
 import 'package:mobizapp/Pages/selectProducts.dart';
-import 'package:mobizapp/Pages/vanstock.dart';
+import 'package:mobizapp/Pages/newvanstockrequests.dart';
 import 'package:mobizapp/Pages/vanstockdata.dart';
 import 'package:mobizapp/Pages/vanstockrequest.dart';
+import 'package:mobizapp/Utilities/rest_ds.dart';
 import 'package:mobizapp/Utilities/sharepref.dart';
 import 'package:mobizapp/confg/appconfig.dart';
 import 'package:mobizapp/confg/sizeconfig.dart';
 
 import '../Models/appstate.dart';
+import '../Models/userDetails.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = "/HomeScreen";
@@ -24,6 +26,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    _getUserDetails();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -126,20 +134,45 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         GestureDetector(
-                          onTap: () => Navigator.pushNamed(
-                              context, VanStockScreen.routeName),
+                          onTap: () {
+                            if (AppState().vanId == null) {
+                              CommonWidgets.showDialogueBox(
+                                  context: context,
+                                  title: "Alert",
+                                  msg: "Van not allocated to this user");
+                            } else {
+                              Navigator.pushNamed(
+                                  context, VanStockScreen.routeName);
+                            }
+                          },
                           child: _iconButtons(
                               icon: Icons.directions_bus, title: 'Van Stock'),
                         ),
                         GestureDetector(
-                            onTap: () => Navigator.pushNamed(
-                                context, CustomersDataScreen.routeName),
+                            onTap: () {
+                              if (AppState().vanId == null) {
+                                CommonWidgets.showDialogueBox(
+                                    context: context,
+                                    title: "Alert",
+                                    msg: "Van not allocated to this user");
+                              } else {
+                                Navigator.pushNamed(
+                                    context, CustomersDataScreen.routeName);
+                              }
+                            },
                             child: _iconButtons(
                                 icon: Icons.people, title: 'Customer')),
                         GestureDetector(
                           onTap: () {
-                            Navigator.pushNamed(
-                                context, ProductsScreen.routeName);
+                            if (AppState().vanId == null) {
+                              CommonWidgets.showDialogueBox(
+                                  context: context,
+                                  title: "Alert",
+                                  msg: "Van not allocated to this user");
+                            } else {
+                              Navigator.pushNamed(
+                                  context, ProductsScreen.routeName);
+                            }
                           },
                           child: _iconButtons(
                               icon: Icons.shopping_cart, title: 'Product'),
@@ -171,8 +204,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       _iconButtons(icon: Icons.groups, title: 'Attendence'),
                       GestureDetector(
                         onTap: () {
-                          Navigator.of(context)
-                              .pushNamed(VanStockRequestsScreen.routeName);
+                          if (AppState().vanId == null) {
+                            CommonWidgets.showDialogueBox(
+                                context: context,
+                                title: "Alert",
+                                msg: "Van not allocated to this user");
+                          } else {
+                            Navigator.of(context)
+                                .pushNamed(VanStockRequestsScreen.routeName);
+                          }
                         },
                         child: _iconButtons(
                             icon: Icons.question_answer,
@@ -366,5 +406,23 @@ class _HomeScreenState extends State<HomeScreen> {
         return alert;
       },
     );
+  }
+
+  Future<void> _getUserDetails() async {
+    RestDatasource api = RestDatasource();
+    UserDetailsModel userData = UserDetailsModel();
+    String subUrl = "/api/get_user_detail?user_id=${AppState().userId}";
+    dynamic resJson = await api.getDetails(subUrl, AppState().token);
+    if (resJson['data'] != null) {
+      userData = UserDetailsModel.fromJson(resJson);
+      AppState().vanId = userData.data![0].vanId;
+    } else {
+      if (mounted) {
+        CommonWidgets.showDialogueBox(
+            context: context,
+            title: "Alert",
+            msg: "Van not allocated to this user");
+      }
+    }
   }
 }

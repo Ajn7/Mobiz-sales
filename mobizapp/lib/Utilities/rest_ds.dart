@@ -32,12 +32,12 @@ class RestDatasource {
     String timeZone = await FlutterTimezone.getLocalTimezone();
     Map<String, String> header;
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
- 
+
     // print("Is Production ${EnvironmentConfig.IsProduction} Server $BASE_URL");
 
     buildNumber = packageInfo.buildNumber;
     appVersion = packageInfo.version;
-  
+
     print("Build Number $buildNumber");
     print("Os type $osType");
     print("Time Zone $timeZone");
@@ -137,13 +137,6 @@ class RestDatasource {
         print('connected');
         if (bodyJson != null) {
           print("then $bodyJson");
-          //for sending timezone and other data through body
-          // Map<String,dynamic> data;
-          // data = jsonDecode(bodyJson);
-          // data["headerData"] = header;
-          // bodyJson = jsonEncode(data);
-          // print("now $bodyJson");
-          //
           return _netUtil
               .post(SIGN_UP_URL, headers: header, body: bodyJson)
               .then((Map<String, dynamic> resJson) {

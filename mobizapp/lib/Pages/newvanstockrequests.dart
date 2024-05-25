@@ -14,7 +14,7 @@ import '../confg/appconfig.dart';
 import '../confg/sizeconfig.dart';
 
 class VanStocks extends StatefulWidget {
-  static const routeName = "VanStocks";
+  static const routeName = "/NewVanStockRequests";
   const VanStocks({super.key});
 
   @override
@@ -26,7 +26,11 @@ class _VanStocksState extends State<VanStocks> {
   bool _initDone = false;
   List<Map<String, dynamic>> stocks = [];
   bool _search = false;
-  String selectedValue = "PCS";
+  List<String?> selectedValue = [" ", " "];
+  List<List<DropdownMenuItem<String>>> menuItems = [[]];
+  List<Map<String, dynamic>?> selectedId = [];
+  bool created = false;
+  bool _loaded = true;
 
   @override
   void initState() {
@@ -87,18 +91,27 @@ class _VanStocksState extends State<VanStocks> {
                 backgroundColor:
                     const MaterialStatePropertyAll(AppConfig.colorPrimary),
               ),
-              onPressed: () {
-                if (stocks.isNotEmpty) {
-                  _setProducts();
-                }
-              },
-              child: Text(
-                'SAVE',
-                style: TextStyle(
-                    fontSize: AppConfig.textCaption3Size,
-                    color: AppConfig.backgroundColor,
-                    fontWeight: AppConfig.headLineWeight),
-              ),
+              onPressed: (_loaded == false)
+                  ? null
+                  : () {
+                      if (stocks.isNotEmpty) {
+                        setState(() {
+                          _loaded = false;
+                        });
+                        _sendProducts();
+                      }
+                    },
+              child: (_loaded == false)
+                  ? const CircularProgressIndicator(
+                      color: AppConfig.backgroundColor,
+                    )
+                  : Text(
+                      'SAVE',
+                      style: TextStyle(
+                          fontSize: AppConfig.textCaption3Size,
+                          color: AppConfig.backgroundColor,
+                          fontWeight: AppConfig.headLineWeight),
+                    ),
             ),
           ),
           body: SingleChildScrollView(
@@ -113,7 +126,7 @@ class _VanStocksState extends State<VanStocks> {
                             itemCount: stocks.length,
                             shrinkWrap: true,
                             itemBuilder: (context, index) {
-                              return _stockCard(stocks[index]);
+                              return _stockCard(stocks[index], index);
                             },
                             separatorBuilder: (context, index) {
                               return CommonWidgets.verticalSpace(1);
@@ -130,29 +143,49 @@ class _VanStocksState extends State<VanStocks> {
 
   Future<void> _getStockData() async {
     stocks = await StockHistory.getStockHistory();
-    debugPrint('History Stocks ${stocks}');
+    print('stock Data $stocks');
+    menuItems = List.generate(stocks.length, (_) => []);
+    selectedValue = List.filled(stocks.length, '');
+    selectedId = List.filled(stocks.length, {});
+    for (int index = 0; index < stocks.length; index++) {
+      dynamic listData = stocks[index]['unitData'].toSet().toList();
+      for (int i = 0; i < listData.length; i++) {
+        menuItems[index].add(DropdownMenuItem(
+            value: (listData[i]['units'][0]['name']).toString(),
+            child: Text((listData[i]['units'][0]['name']).toString())));
+        selectedValue[index] = (stocks[index]['selectedUnit'] != null)
+            ? stocks[index]['selectedUnit']
+            : listData[i]['units'][0]['name'].toString();
+        selectedId[index] = {
+          'name': listData[i]['units'][0]['name'].toString(),
+          'id': listData[i]['units'][0]['id'],
+        };
+      }
+    }
 
     setState(() {
       _initDone = true;
     });
   }
 
-  Widget _stockCard(Map<dynamic, dynamic> data) {
+  Widget _stockCard(Map<dynamic, dynamic> data, int index) {
     return Card(
       elevation: 3,
       child: Container(
         padding: const EdgeInsets.all(5),
         width: SizeConfig.blockSizeHorizontal * 90,
-        height: SizeConfig.blockSizeVertical * 9,
         decoration: const BoxDecoration(
           color: AppConfig.backgroundColor,
           borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
         child: ListTile(
-          title: Text(data['code'],
-              style: TextStyle(fontSize: AppConfig.textCaption2Size)),
+          title: Tooltip(
+            message: data['name'].toString().toUpperCase(),
+            child: Text(data['name'].toString().toUpperCase(),
+                style: TextStyle(fontSize: AppConfig.textCaption2Size)),
+          ),
           subtitle: Text(
-            data['name'],
+            data['code'],
             style: TextStyle(fontSize: AppConfig.textCaption3Size),
           ),
           trailing:
@@ -161,14 +194,17 @@ class _VanStocksState extends State<VanStocks> {
             width: SizeConfig.blockSizeHorizontal * 45,
             child: Row(
               children: [
+                const Spacer(),
                 DropdownButton(
-                    value: selectedValue,
+                    value: selectedValue[index],
                     onChanged: (String? newValue) {
                       setState(() {
-                        selectedValue = newValue!;
+                        selectedValue[index] = newValue!;
                       });
+                      StockHistory.updateStockItem(
+                          data['id'], 'selectedUnit', selectedValue[index]);
                     },
-                    items: dropdownItems),
+                    items: menuItems[index]),
                 CommonWidgets.horizontalSpace(2),
                 Text(
                   data['quantity'].toString(),
@@ -186,6 +222,8 @@ class _VanStocksState extends State<VanStocks> {
                             }
                           },
                         );
+                        StockHistory.updateStockItem(
+                            data['id'], 'quantity', data['quantity']);
                       },
                       child: CircleAvatar(
                         radius: 9,
@@ -205,6 +243,8 @@ class _VanStocksState extends State<VanStocks> {
                         setState(() {
                           data['quantity'] = data['quantity'] + 1;
                         });
+                        StockHistory.updateStockItem(
+                            data['id'], 'quantity', data['quantity']);
                       },
                       child: const CircleAvatar(
                         radius: 9,
@@ -236,25 +276,34 @@ class _VanStocksState extends State<VanStocks> {
     );
   }
 
-  Future<void> _setProducts() async {
+  Future<void> _sendProducts() async {
     RestDatasource api = RestDatasource();
-
     dynamic bodyJson = {
-      "van_id": "1",
+      "van_id": AppState().vanId,
       "store_id": AppState().storeId,
       "user_id": AppState().userId,
       "item_id": [],
       "quantity": [],
       "unit": []
     };
-    for (var item in stocks) {
-      bodyJson["item_id"].add(item["id"]);
-      bodyJson["quantity"].add(item["quantity"]);
-      bodyJson["unit"].add(item["unit"]);
+    int units = 0;
+    for (int i = 0; i < stocks.length; i++) {
+      for (var j in stocks[i]['unitData']) {
+        if (j['units'][0]['name'] == selectedValue[i]) {
+          units = j['units'][0]['id'];
+        }
+      }
+      //stocks
+      bodyJson["item_id"].add(stocks[i]["id"]);
+      bodyJson["quantity"].add(stocks[i]["quantity"]);
+      bodyJson["unit"].add(units);
     }
-    print('resJson $bodyJson');
+    debugPrint('resJson $bodyJson ');
     dynamic resJson = await api.sendData(
         '/api/vanrequest.store', AppState().token, jsonEncode(bodyJson));
+    setState(() {
+      _loaded = true;
+    });
     if (resJson['data'] != null) {
       if (mounted) {
         CommonWidgets.showDialogueBox(
@@ -263,23 +312,5 @@ class _VanStocksState extends State<VanStocks> {
             (value) => Navigator.of(context).pushNamed(HomeScreen.routeName));
       }
     }
-  }
-
-  List<DropdownMenuItem<String>> get dropdownItems {
-    List<DropdownMenuItem<String>> menuItems = const [
-      DropdownMenuItem(
-        value: "PCS",
-        child: Text("PCS"),
-      ),
-      DropdownMenuItem(
-        value: "BOX",
-        child: Text("BOX"),
-      ),
-      DropdownMenuItem(
-        value: "Container",
-        child: Text("Container"),
-      ),
-    ];
-    return menuItems;
   }
 }

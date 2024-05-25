@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mobizapp/Models/appstate.dart';
-import 'package:mobizapp/Pages/vanstock.dart';
+import 'package:mobizapp/Pages/newvanstockrequests.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../Models/ProductDataModelClass.dart';
+import '../Models/productquantirydetails.dart' as Qty;
 import '../Models/stockData.dart';
 import '../Utilities/rest_ds.dart';
 import '../confg/appconfig.dart';
 import '../confg/sizeconfig.dart';
 import '../Components/commonwidgets.dart';
-import '../Models/quantitymodel.dart' as Qty;
 
 class SelectProductsScreen extends StatefulWidget {
   static const routeName = "/SelectProductScreen";
@@ -28,8 +28,7 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
   List<Map<String, dynamic>> items = [];
   bool _search = false;
 
-  Qty.QuantityModel qunatityData = Qty.QuantityModel();
-  List<Qty.QuantityModel> quantity = [];
+  Qty.ProductQuantityDetails qunatityData = Qty.ProductQuantityDetails();
   @override
   void initState() {
     super.initState();
@@ -42,7 +41,7 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
       appBar: AppBar(
         iconTheme: const IconThemeData(color: AppConfig.backgroundColor),
         title: const Text(
-          'Van Stocks',
+          'Select Products',
           style: TextStyle(color: AppConfig.backgroundColor),
         ),
         backgroundColor: AppConfig.colorPrimary,
@@ -188,14 +187,15 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
             selectedItems.remove(index);
           } else {
             selectedItems.add(index);
+
             addItem(
               data.name!,
               data.code!,
               data.id!,
               data.baseUnitQty!,
               data.baseUnitId!,
+              data.unitData.result!.data!,
             );
-
             Navigator.pushReplacementNamed(context, VanStocks.routeName);
           }
         });
@@ -203,7 +203,6 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
       child: Card(
         elevation: 3,
         child: Container(
-          height: SizeConfig.blockSizeVertical * 8,
           width: SizeConfig.blockSizeHorizontal * 90,
           decoration: BoxDecoration(
             border: Border.all(
@@ -241,29 +240,35 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      data.id.toString(),
-                      style: TextStyle(
-                          fontSize: AppConfig.paragraphSize,
-                          fontWeight: AppConfig.headLineWeight),
+                    Tooltip(
+                      message: data.name!.toUpperCase(),
+                      child: SizedBox(
+                        width: SizeConfig.blockSizeHorizontal * 70,
+                        child: Text(
+                          data.name!.toUpperCase(),
+                          style: TextStyle(fontSize: AppConfig.paragraphSize),
+                        ),
+                      ),
                     ),
                     Text(
-                      (data.name ?? ''),
-                      style: TextStyle(fontSize: AppConfig.textCaption3Size),
+                      data.code.toString(),
+                      style: TextStyle(
+                          fontSize: AppConfig.textCaption3Size,
+                          fontWeight: AppConfig.headLineWeight),
                     ),
                     Row(
                       children: [
                         for (int i = 0;
-                            i < quantity[index].result!.data!.length;
+                            i < data.unitData.result!.data!.length;
                             i++)
                           Text(
                             (i == 0)
-                                ? '${quantity[index].result!.data![i].units![0].name!}: ${formatDivisionResult(products.data![index].baseUnitQty!, quantity[index].result!.data![i].qty!, quantity[index].result!.data![i].units![0].name!)}'
+                                ? '${data.unitData.result!.data![i].units![0].name!}: ${formatDivisionResult(data.baseUnitQty!, data.unitData.result!.data![i].qty!, data.unitData.result!.data![i].units![0].name!)}'
                                 : (i == 1)
-                                    ? '| ${quantity[index].result!.data![i].units![0].name!}: ${formatDivisionResult(products.data![index].secondUnitQty!, quantity[index].result!.data![i].qty!, quantity[index].result!.data![i].units![0].name!)} '
+                                    ? '| ${data.unitData.result!.data![i].units![0].name!}: ${formatDivisionResult(data.secondUnitQty!, data.unitData.result!.data![i].qty!, data.unitData.result!.data![i].units![0].name!)} '
                                     : (i == 2)
-                                        ? '| ${quantity[index].result!.data![i].units![0].name!}: ${formatDivisionResult(products.data![index].thirdUnitQty!, quantity[index].result!.data![i].qty!, quantity[index].result!.data![i].units![0].name!)}'
-                                        : '| ${quantity[index].result!.data![i].units![0].name!}: ${formatDivisionResult(products.data![index].fourthUnitQty!, quantity[index].result!.data![i].qty!, quantity[index].result!.data![i].units![0].name!)}',
+                                        ? '| ${data.unitData.result.data![i].units![0].name!}: ${formatDivisionResult(data.thirdUnitQty!, data.unitData.result!.data![i].qty!, data.unitData.result!.data![i].units![0].name!)}'
+                                        : '| ${data.unitData.result.data![i].units![0].name!}: ${formatDivisionResult(data.fourthUnitQty!, data.unitData.result!.data![i].qty!, data.unitData.result!.data![i].units![0].name!)}',
                             style: TextStyle(
                                 fontSize: AppConfig.textCaption3Size,
                                 fontWeight: AppConfig.headLineWeight),
@@ -288,7 +293,7 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
     if (resJson['data'] != null) {
       products = ProductDataModel.fromJson(resJson);
       for (int i = 0; i < products.data!.length; i++) {
-        _getQuantity(i, products.data![0].id!);
+        _getQuantity(i, products.data![i].id!);
       }
     } else {
       setState(() {
@@ -298,14 +303,15 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
     }
   }
 
-  void addItem(
-      String name, String code, int id, int quantity, int baseUnit) async {
+  void addItem(String name, String code, int id, int quantity, int baseUnit,
+      List<Qty.Data> unitData) async {
     Map<String, dynamic> newItem = {
       "name": name,
       "code": code,
       "id": id,
       "quantity": quantity,
-      "unit": baseUnit
+      "unit": baseUnit,
+      "unitData": unitData,
     };
 
     // Check for duplicates before adding
@@ -324,18 +330,20 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
   Future<void> _getQuantity(int i, int id) async {
     RestDatasource api = RestDatasource();
     dynamic resJson = await api.getDetails(
-        '/api/get_van_stock_detail?product_id=$id',
+        '/api/get_product_detail?product_id=$id',
         AppState().token); //${AppState().storeId}
 
     if (resJson['status'] == "success") {
-      qunatityData = Qty.QuantityModel.fromJson(resJson);
-      quantity.add(qunatityData);
+      qunatityData = Qty.ProductQuantityDetails.fromJson(resJson);
+      products.data![i].unitData = qunatityData;
       if (i == products.data!.length - 1) {
-        setState(
-          () {
-            _initDone = true;
-          },
-        );
+        Future.delayed(const Duration(seconds: 3), () {
+          setState(
+            () {
+              _initDone = true;
+            },
+          );
+        });
       }
     }
   }

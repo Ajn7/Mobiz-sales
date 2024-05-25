@@ -2,12 +2,13 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:mobizapp/Pages/selectProducts.dart';
-import 'package:mobizapp/Pages/vanstock.dart';
+import 'package:mobizapp/Pages/newvanstockrequests.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../Components/commonwidgets.dart';
 import '../Models/appstate.dart';
 import '../Models/requestmodelclass.dart';
+import '../Models/stockdata.dart';
 import '../Utilities/rest_ds.dart';
 import '../confg/appconfig.dart';
 import '../confg/sizeconfig.dart';
@@ -24,6 +25,7 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
   bool _initDone = false;
   bool _nodata = false;
   RequestModel request = RequestModel();
+  List<Map<String, dynamic>> stocks = [];
   final TextEditingController _searchData = TextEditingController();
   bool _search = false;
   @override
@@ -67,9 +69,14 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
           CommonWidgets.horizontalSpace(1),
           (!_search)
               ? GestureDetector(
-                  onTap: () {
+                  onTap: () async {
+                    // if (stocks.isEmpty) {
+                    //   Navigator.pushReplacementNamed(
+                    //       context, SelectProductsScreen.routeName);
+                    // } else {
                     Navigator.pushReplacementNamed(
                         context, VanStocks.routeName);
+                    // }
                   },
                   child: const Icon(
                     Icons.add,
@@ -169,10 +176,7 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
           ),
           trailing: Transform.rotate(
             angle: 100,
-            child: Icon(
-              Icons.touch_app,
-              color: AppConfig.buttonDeactiveColor.withOpacity(0.7),
-            ),
+            child: const Icon(Icons.touch_app, color: Colors.transparent),
           ),
           backgroundColor: AppConfig.backgroundColor,
           title: Row(
@@ -185,17 +189,25 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
                     width: SizeConfig.blockSizeHorizontal * 65,
                     child: Row(
                       children: [
-                        Text(
-                          '${data.invoiceNo}',
-                          style:
-                              TextStyle(fontWeight: AppConfig.headLineWeight),
+                        Tooltip(
+                          message: '${data.invoiceNo}',
+                          child: SizedBox(
+                            width: SizeConfig.blockSizeHorizontal * 30,
+                            child: Text(
+                              (data.invoiceNo!.length > 15)
+                                  ? '${data.invoiceNo!.substring(0, 15)}...'
+                                  : '${data.invoiceNo}',
+                              style: TextStyle(
+                                  fontWeight: AppConfig.headLineWeight),
+                            ),
+                          ),
                         ),
-                        const Spacer(),
+                        CommonWidgets.horizontalSpace(12),
                         Text(
                           (data.status == 1)
                               ? 'Pending'
                               : (data.status == 2)
-                                  ? 'Approval'
+                                  ? 'Approved'
                                   : 'Confirmed',
                           style: TextStyle(
                               fontSize: AppConfig.textCaption3Size,
@@ -220,7 +232,7 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
             ],
           ),
           children: <Widget>[
-            (data.status != 3)
+            (data.status == 2)
                 ? Padding(
                     padding: const EdgeInsets.all(5.0),
                     child: Column(
@@ -228,42 +240,48 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         CommonWidgets.verticalSpace(1),
-                        const Divider(
-                          color: AppConfig.textBlack,
+                        Divider(
+                          color: AppConfig.buttonDeactiveColor.withOpacity(0.4),
                         ),
                         for (int i = 0; i < data.detail!.length; i++)
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                data.detail![i].id.toString(),
-                                style: TextStyle(
-                                    fontSize: AppConfig.textCaption3Size,
-                                    fontWeight: AppConfig.headLineWeight),
-                              ),
-                              Row(
-                                children: [
-                                  Text(
-                                    (data.detail![i].productName ?? '')
-                                        .toUpperCase(),
-                                    style: TextStyle(
-                                        fontSize: AppConfig.textCaption3Size,
-                                        fontWeight: AppConfig.headLineWeight),
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  data.detail![i].itemId.toString(),
+                                  style: TextStyle(
+                                      fontSize: AppConfig.textCaption3Size,
+                                      fontWeight: AppConfig.headLineWeight),
+                                ),
+                                Tooltip(
+                                  message: (data.detail![i].productName ?? '')
+                                      .toUpperCase(),
+                                  child: SizedBox(
+                                    width: SizeConfig.blockSizeHorizontal * 80,
+                                    child: Text(
+                                      (data.detail![i].productName ?? '')
+                                          .toUpperCase(),
+                                      style: TextStyle(
+                                          fontSize: AppConfig.textCaption3Size,
+                                          fontWeight: AppConfig.headLineWeight),
+                                    ),
                                   ),
-                                  const Spacer(),
-                                  Text(
-                                    'PCS QTY : ${data.detail![i].approvedQuantity}',
-                                    style: TextStyle(
-                                        fontSize: AppConfig.textCaption3Size,
-                                        fontWeight: AppConfig.headLineWeight),
-                                  ),
-                                ],
-                              ),
-                              const Divider(
-                                color: AppConfig.textBlack,
-                              ),
-                            ],
+                                ),
+                                CommonWidgets.verticalSpace(1),
+                                Text(
+                                  '${data.detail![i].unit} : ${data.detail![i].approvedQuantity}',
+                                  style: TextStyle(
+                                      fontSize: AppConfig.textCaption3Size,
+                                      fontWeight: AppConfig.headLineWeight),
+                                ),
+                                Divider(
+                                  color: AppConfig.textBlack.withOpacity(0.7),
+                                ),
+                              ],
+                            ),
                           ),
                         // Text(
                         //   'RB0002',
@@ -329,42 +347,52 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         CommonWidgets.verticalSpace(1),
-                        const Divider(
-                          color: AppConfig.textBlack,
-                        ),
+                        Divider(
+                            color:
+                                AppConfig.buttonDeactiveColor.withOpacity(0.4)),
                         for (int i = 0; i < data.detail!.length; i++)
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                data.detail![i].id.toString(),
-                                style: TextStyle(
-                                    fontSize: AppConfig.textCaption3Size,
-                                    fontWeight: AppConfig.headLineWeight),
-                              ),
-                              Row(
-                                children: [
-                                  Text(
-                                    (data.detail![i].productName ?? '')
-                                        .toUpperCase(),
-                                    style: TextStyle(
-                                        fontSize: AppConfig.textCaption3Size,
-                                        fontWeight: AppConfig.headLineWeight),
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  data.detail![i].itemId.toString(),
+                                  style: TextStyle(
+                                      fontSize: AppConfig.textCaption3Size,
+                                      fontWeight: AppConfig.headLineWeight),
+                                ),
+                                Tooltip(
+                                  message: (data.detail![i].productName ?? '')
+                                      .toUpperCase(),
+                                  child: SizedBox(
+                                    width: SizeConfig.blockSizeHorizontal * 80,
+                                    child: Text(
+                                      (data.detail![i].productName ?? '')
+                                          .toUpperCase(),
+                                      style: TextStyle(
+                                          fontSize: AppConfig.textCaption3Size,
+                                          fontWeight: AppConfig.headLineWeight),
+                                    ),
                                   ),
-                                  const Spacer(),
-                                  Text(
-                                    'PCS QTY : ${data.detail![i].approvedQuantity}',
-                                    style: TextStyle(
-                                        fontSize: AppConfig.textCaption3Size,
-                                        fontWeight: AppConfig.headLineWeight),
-                                  ),
-                                ],
-                              ),
-                              const Divider(
-                                color: AppConfig.textBlack,
-                              ),
-                            ],
+                                ),
+                                CommonWidgets.verticalSpace(1),
+                                Text(
+                                  (data.status == 3)
+                                      ? '${data.detail![i].unit}: ${data.detail![i].approvedQuantity}'
+                                      : '${data.detail![i].unit}: ${data.detail![i].quantity}',
+                                  style: TextStyle(
+                                      fontSize: AppConfig.textCaption3Size,
+                                      fontWeight: AppConfig.headLineWeight),
+                                ),
+                                (i == data.detail!.length - 1)
+                                    ? Container()
+                                    : Divider(
+                                        color: AppConfig.buttonDeactiveColor
+                                            .withOpacity(0.4)),
+                              ],
+                            ),
                           ),
                       ],
                     ),
@@ -377,17 +405,20 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
 
   Future<void> _getRequests() async {
     RestDatasource api = RestDatasource();
+    stocks = await StockHistory.getStockHistory();
     dynamic resJson = await api.getDetails(
-        '/api/vanrequest.index?store_id=${AppState().storeId}&van_id=1',
+        '/api/vanrequest.index?store_id=${AppState().storeId}&van_id=${AppState().vanId}',
         AppState().token);
 
     if (resJson['data'] != null) {
       request = RequestModel.fromJson(resJson);
-      setState(
-        () {
-          _initDone = true;
-        },
-      );
+      if (mounted) {
+        setState(
+          () {
+            _initDone = true;
+          },
+        );
+      }
     } else {
       setState(() {
         _initDone = true;
@@ -402,10 +433,10 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
     dynamic bodyJson = {
       "id": id,
     };
-
-    dynamic resJson = await api.sendData(
-        '/api/vanrequest.confirm', AppState().token, jsonEncode(bodyJson));
-    if (resJson['data'] != null) {
+    try {
+      dynamic resJson = await api.sendData(
+          '/api/vanrequest.confirm', AppState().token, jsonEncode(bodyJson));
+    } catch (e) {
       if (mounted) {
         CommonWidgets.showDialogueBox(
             context: context,

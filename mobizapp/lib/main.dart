@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobizapp/Pages/customerdetailscreen.dart';
 import 'package:mobizapp/Pages/customerscreen.dart';
 import 'package:mobizapp/Pages/homepage.dart';
 import 'package:mobizapp/Pages/loginpage.dart';
@@ -6,9 +7,11 @@ import 'package:mobizapp/Pages/productspage.dart';
 import 'package:mobizapp/Pages/salesscreen.dart';
 import 'package:mobizapp/Pages/selectProducts.dart';
 import 'package:mobizapp/Pages/splashscreen.dart';
-import 'package:mobizapp/Pages/vanstock.dart';
+import 'package:mobizapp/Pages/newvanstockrequests.dart';
 import 'package:mobizapp/Pages/vanstockdata.dart';
 import 'package:mobizapp/Pages/vanstockrequest.dart';
+
+import 'Pages/salesselectproducts.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,7 +42,9 @@ class MyApp extends StatelessWidget {
           SelectProductsScreen.routeName: (context) => SelectProductsScreen(),
           CustomersDataScreen.routeName: (context) => CustomersDataScreen(),
           SalesScreen.routeName: (context) => SalesScreen(),
-          VanStockScreen.routeName: (context) => VanStockScreen()
+          VanStockScreen.routeName: (context) => VanStockScreen(),
+          CustomerDetailsScreen.routeName: (context) => CustomerDetailsScreen(),
+          SalesSelectProductsScreen.routeName: (context) => SalesSelectProductsScreen(),
         });
   }
 }

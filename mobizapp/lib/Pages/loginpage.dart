@@ -197,41 +197,49 @@ class _LoginScreenState extends State<LoginScreen> {
       "email": _username.text,
       "password": _password.text
     };
-    dynamic resJson = await api.sendData(
-      '/api/login',
-      null,
-      jsonEncode(bodyJson),
-    );
-    debugPrint('Logoin Resp $resJson');
-    LoginModel loginResp = LoginModel.fromJson(resJson);
-    if (loginResp.status!.isNotEmpty) {
-      if (loginResp.user != null && loginResp.authorisation != null) {
-        appState.token = loginResp.authorisation!.token;
-        appState.storeId = loginResp.user!.storeId;
-        appState.roleId = loginResp.user!.rolId;
-        appState.name = loginResp.user!.name;
-        appState.userId = loginResp.user!.id;
-        appState.email = loginResp.user!.email;
-        appState.loginState = 'LOGGED_IN';
+    try {
+      dynamic resJson = await api.sendData(
+        '/api/login',
+        null,
+        jsonEncode(bodyJson),
+      );
 
-        //Clear the shared preference if it is already present
-        bool appStateRetrieved = await sharedPref.containsKey('app_state');
-        if (appStateRetrieved == true) {
-          sharedPref.removeAll();
-        }
+      LoginModel loginResp = LoginModel.fromJson(resJson);
+      debugPrint('Logoin Resp $resJson ${loginResp.user!.storeId}');
+      if (loginResp.status == "success") {
+        if (loginResp.user != null && loginResp.authorisation != null) {
+          appState.token = loginResp.authorisation!.token;
+          appState.storeId = loginResp.user!.storeId;
+          appState.roleId = loginResp.user!.rolId;
+          appState.name = loginResp.user!.name;
+          appState.userId = loginResp.user!.id;
+          appState.email = loginResp.user!.email;
+          appState.loginState = 'LOGGED_IN';
 
-        /// Save it saved preference
-        sharedPref.save("app_state", appState);
-        if (mounted) {
-          Navigator.of(context).pushReplacementNamed(HomeScreen.routeName);
+          //Clear the shared preference if it is already present
+          bool appStateRetrieved = await sharedPref.containsKey('app_state');
+          if (appStateRetrieved == true) {
+            sharedPref.removeAll();
+          }
+
+          /// Save it saved preference
+          sharedPref.save("app_state", appState);
+          if (mounted) {
+            Navigator.of(context).pushReplacementNamed(HomeScreen.routeName);
+          }
+        } else {
+          if (mounted) {
+            CommonWidgets.showDialogueBox(
+                context: context, title: "Error", msg: "Something went wrong");
+          }
         }
       } else {
         if (mounted) {
           CommonWidgets.showDialogueBox(
-              context: context, title: "Error", msg: "Something went wrong");
+              context: context, title: "Error", msg: "Invalid Email/Password");
         }
       }
-    } else {
+    } catch (e) {
       if (mounted) {
         CommonWidgets.showDialogueBox(
             context: context, title: "Error", msg: "Invalid Email/Password");

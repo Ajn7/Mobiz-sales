@@ -147,7 +147,6 @@ class _ProductsScreenState extends State<ProductsScreen> {
     return Card(
       elevation: 3,
       child: Container(
-        height: SizeConfig.blockSizeVertical * 8,
         width: SizeConfig.blockSizeHorizontal * 90,
         decoration: const BoxDecoration(
           color: AppConfig.backgroundColor,
@@ -178,15 +177,21 @@ class _ProductsScreenState extends State<ProductsScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    data.id.toString(),
-                    style: TextStyle(
-                        fontSize: AppConfig.paragraphSize,
-                        fontWeight: AppConfig.headLineWeight),
+                  Tooltip(
+                    message: data.name!.toUpperCase(),
+                    child: SizedBox(
+                      width: SizeConfig.blockSizeHorizontal * 70,
+                      child: Text(
+                        data.name!,
+                        style: TextStyle(fontSize: AppConfig.paragraphSize),
+                      ),
+                    ),
                   ),
                   Text(
-                    data.name!,
-                    style: TextStyle(fontSize: AppConfig.textCaption3Size),
+                    data.code.toString(),
+                    style: TextStyle(
+                        fontSize: AppConfig.textCaption3Size,
+                        fontWeight: AppConfig.headLineWeight),
                   ),
                   Row(
                     children: [
@@ -224,7 +229,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
     if (resJson['data'] != null) {
       products = ProductDataModel.fromJson(resJson);
       for (int i = 0; i < products.data!.length; i++) {
-        _getQuantity(i, products.data![0].id!);
+        _getQuantity(i, products.data![i].id!);
       }
     } else {
       setState(() {
@@ -244,9 +249,14 @@ class _ProductsScreenState extends State<ProductsScreen> {
       qunatityData = Qty.QuantityModel.fromJson(resJson);
       quantity.add(qunatityData);
       if (i == products.data!.length - 1) {
-        setState(
+        Future.delayed(
+          const Duration(seconds: 3),
           () {
-            _initDone = true;
+            setState(
+              () {
+                _initDone = true;
+              },
+            );
           },
         );
       }

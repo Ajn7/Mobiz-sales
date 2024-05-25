@@ -1,11 +1,10 @@
-class ProductDataModel {
+class VanSaleProducts {
   List<Data>? data;
   bool? success;
-  List<String>? messages;
 
-  ProductDataModel({this.data, this.success, this.messages});
+  VanSaleProducts({this.data, this.success});
 
-  ProductDataModel.fromJson(Map<String, dynamic> json) {
+  VanSaleProducts.fromJson(Map<String, dynamic> json) {
     if (json['data'] != null) {
       data = <Data>[];
       json['data'].forEach((v) {
@@ -13,7 +12,6 @@ class ProductDataModel {
       });
     }
     success = json['success'];
-    messages = json['messages'].cast<String>();
   }
 
   Map<String, dynamic> toJson() {
@@ -22,13 +20,146 @@ class ProductDataModel {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
     data['success'] = this.success;
-    data['messages'] = this.messages;
     return data;
   }
 }
 
 class Data {
   int? id;
+  int? customerId;
+  String? billMode;
+  String? inDate;
+  String? inTime;
+  String? invoiceNo;
+  String? deliveryNo;
+  int? otherCharge;
+  int? discount;
+  int? total;
+  int? totalTax;
+  int? grandTotal;
+  int? receipt;
+  int? balance;
+  int? orderType;
+  int? ifVat;
+  int? vanId;
+  int? userId;
+  int? storeId;
+  int? status;
+  String? createdAt;
+  String? updatedAt;
+  String? deletedAt;
+  List<Detail>? detail;
+
+  Data(
+      {this.id,
+      this.customerId,
+      this.billMode,
+      this.inDate,
+      this.inTime,
+      this.invoiceNo,
+      this.deliveryNo,
+      this.otherCharge,
+      this.discount,
+      this.total,
+      this.totalTax,
+      this.grandTotal,
+      this.receipt,
+      this.balance,
+      this.orderType,
+      this.ifVat,
+      this.vanId,
+      this.userId,
+      this.storeId,
+      this.status,
+      this.createdAt,
+      this.updatedAt,
+      this.deletedAt,
+      this.detail});
+
+  Data.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    customerId = json['customer_id'];
+    billMode = json['bill_mode'];
+    inDate = json['in_date'];
+    inTime = json['in_time'];
+    invoiceNo = json['invoice_no'];
+    deliveryNo = json['delivery_no'];
+    otherCharge = json['other_charge'];
+    discount = json['discount'];
+    total = json['total'];
+    totalTax = json['total_tax'];
+    grandTotal = json['grand_total'];
+    receipt = json['receipt'];
+    balance = json['balance'];
+    orderType = json['order_type'];
+    ifVat = json['if_vat'];
+    vanId = json['van_id'];
+    userId = json['user_id'];
+    storeId = json['store_id'];
+    status = json['status'];
+    createdAt = json['created_at'];
+    updatedAt = json['updated_at'];
+    deletedAt = json['deleted_at'];
+    if (json['detail'] != null) {
+      detail = <Detail>[];
+      json['detail'].forEach((v) {
+        detail!.add(new Detail.fromJson(v));
+      });
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['customer_id'] = this.customerId;
+    data['bill_mode'] = this.billMode;
+    data['in_date'] = this.inDate;
+    data['in_time'] = this.inTime;
+    data['invoice_no'] = this.invoiceNo;
+    data['delivery_no'] = this.deliveryNo;
+    data['other_charge'] = this.otherCharge;
+    data['discount'] = this.discount;
+    data['total'] = this.total;
+    data['total_tax'] = this.totalTax;
+    data['grand_total'] = this.grandTotal;
+    data['receipt'] = this.receipt;
+    data['balance'] = this.balance;
+    data['order_type'] = this.orderType;
+    data['if_vat'] = this.ifVat;
+    data['van_id'] = this.vanId;
+    data['user_id'] = this.userId;
+    data['store_id'] = this.storeId;
+    data['status'] = this.status;
+    data['created_at'] = this.createdAt;
+    data['updated_at'] = this.updatedAt;
+    data['deleted_at'] = this.deletedAt;
+    if (this.detail != null) {
+      data['detail'] = this.detail!.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+}
+
+class Detail {
+  int? id;
+  int? goodsOutId;
+  int? itemId;
+  String? unit;
+  int? convertQty;
+  int? quantity;
+  num? rate;
+  num? prodiscount;
+  int? taxable;
+  num? taxAmt;
+  num? mrp;
+  num? amount;
+  int? vanId;
+  int? userId;
+  int? storeId;
+  int? status;
+  String? createdAt;
+  String? updatedAt;
+  String? deletedAt;
   String? code;
   String? name;
   String? proImage;
@@ -39,7 +170,7 @@ class Data {
   int? taxId;
   int? taxPercentage;
   int? taxInclusive;
-  num? price;
+  int? price;
   int? baseUnitId;
   int? baseUnitQty;
   String? baseUnitDiscount;
@@ -65,15 +196,28 @@ class Data {
   String? fourthUnitOpStock;
   String? description;
   int? productQty;
-  int? storeId;
-  int? status;
-  String? createdAt;
-  String? updatedAt;
-  String? deletedAt;
-  dynamic unitData;
+  int? percentage;
 
-  Data(
+  Detail(
       {this.id,
+      this.goodsOutId,
+      this.itemId,
+      this.unit,
+      this.convertQty,
+      this.quantity,
+      this.rate,
+      this.prodiscount,
+      this.taxable,
+      this.taxAmt,
+      this.mrp,
+      this.amount,
+      this.vanId,
+      this.userId,
+      this.storeId,
+      this.status,
+      this.createdAt,
+      this.updatedAt,
+      this.deletedAt,
       this.code,
       this.name,
       this.proImage,
@@ -110,15 +254,28 @@ class Data {
       this.fourthUnitOpStock,
       this.description,
       this.productQty,
-      this.storeId,
-      this.status,
-      this.createdAt,
-      this.updatedAt,
-      this.unitData,
-      this.deletedAt});
+      this.percentage});
 
-  Data.fromJson(Map<String, dynamic> json) {
+  Detail.fromJson(Map<String, dynamic> json) {
     id = json['id'];
+    goodsOutId = json['goods_out_id'];
+    itemId = json['item_id'];
+    unit = json['unit'];
+    convertQty = json['convert_qty'];
+    quantity = json['quantity'];
+    rate = json['rate'];
+    prodiscount = json['prodiscount'];
+    taxable = json['taxable'];
+    taxAmt = json['tax_amt'];
+    mrp = json['mrp'];
+    amount = json['amount'];
+    vanId = json['van_id'];
+    userId = json['user_id'];
+    storeId = json['store_id'];
+    status = json['status'];
+    createdAt = json['created_at'];
+    updatedAt = json['updated_at'];
+    deletedAt = json['deleted_at'];
     code = json['code'];
     name = json['name'];
     proImage = json['pro_image'];
@@ -155,17 +312,30 @@ class Data {
     fourthUnitOpStock = json['fourth_unit_op_stock'];
     description = json['description'];
     productQty = json['product_qty'];
-    storeId = json['store_id'];
-    status = json['status'];
-    createdAt = json['created_at'];
-    updatedAt = json['updated_at'];
-    deletedAt = json['deleted_at'];
-    unitData = json['unit_data'];
+    percentage = json['percentage'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['id'] = this.id;
+    data['goods_out_id'] = this.goodsOutId;
+    data['item_id'] = this.itemId;
+    data['unit'] = this.unit;
+    data['convert_qty'] = this.convertQty;
+    data['quantity'] = this.quantity;
+    data['rate'] = this.rate;
+    data['prodiscount'] = this.prodiscount;
+    data['taxable'] = this.taxable;
+    data['tax_amt'] = this.taxAmt;
+    data['mrp'] = this.mrp;
+    data['amount'] = this.amount;
+    data['van_id'] = this.vanId;
+    data['user_id'] = this.userId;
+    data['store_id'] = this.storeId;
+    data['status'] = this.status;
+    data['created_at'] = this.createdAt;
+    data['updated_at'] = this.updatedAt;
+    data['deleted_at'] = this.deletedAt;
     data['code'] = this.code;
     data['name'] = this.name;
     data['pro_image'] = this.proImage;
@@ -202,12 +372,7 @@ class Data {
     data['fourth_unit_op_stock'] = this.fourthUnitOpStock;
     data['description'] = this.description;
     data['product_qty'] = this.productQty;
-    data['store_id'] = this.storeId;
-    data['status'] = this.status;
-    data['created_at'] = this.createdAt;
-    data['updated_at'] = this.updatedAt;
-    data['deleted_at'] = this.deletedAt;
-    data['unitData'] = this.unitData;
+    data['percentage'] = this.percentage;
     return data;
   }
 }

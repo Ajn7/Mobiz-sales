@@ -34,14 +34,14 @@ class Data {
   String? inDate;
   String? inTime;
   String? invoiceNo;
-  Null? approvedDate;
-  Null? approvedTime;
+  String? approvedDate;
+  String? approvedTime;
   int? approvedUser;
   int? storeId;
   int? status;
   String? createdAt;
   String? updatedAt;
-  Null? deletedAt;
+  String? deletedAt;
   List<Detail>? detail;
 
   Data(

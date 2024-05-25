@@ -1,32 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:mobizapp/Models/appstate.dart';
+import 'package:mobizapp/Pages/newvanstockrequests.dart';
+import 'package:mobizapp/Pages/salesscreen.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../Models/stockData.dart';
-import '../Models/vanstockdata.dart';
-import '../Models/vanstockquandity.dart' as Qty;
+import '../Models/productquantirydetails.dart' as Qty;
+import '../Models/salesdata.dart';
+import '../Models/vansaleproduct.dart';
 import '../Utilities/rest_ds.dart';
 import '../confg/appconfig.dart';
 import '../confg/sizeconfig.dart';
 import '../Components/commonwidgets.dart';
 
-class VanStockScreen extends StatefulWidget {
-  static const routeName = "/VanStockScreen";
-  const VanStockScreen({super.key});
+class SalesSelectProductsScreen extends StatefulWidget {
+  static const routeName = "/SalesSelectProductScreen";
+  const SalesSelectProductsScreen({super.key});
 
   @override
-  State<VanStockScreen> createState() => _VanStockScreenState();
+  State<SalesSelectProductsScreen> createState() =>
+      _SalesSelectProductsScreenState();
 }
 
-class _VanStockScreenState extends State<VanStockScreen> {
+class _SalesSelectProductsScreenState extends State<SalesSelectProductsScreen> {
   final TextEditingController _searchData = TextEditingController();
-  VanStockData products = VanStockData();
-  Qty.VanStockQuandity qunatityData = Qty.VanStockQuandity();
+  VanSaleProducts products = VanSaleProducts();
   bool _initDone = false;
   bool _noData = false;
   List<int> selectedItems = [];
   List<Map<String, dynamic>> items = [];
   bool _search = false;
+  int? customerId;
+
+  Qty.ProductQuantityDetails qunatityData = Qty.ProductQuantityDetails();
+  List<Qty.ProductQuantityDetails> quantity = [];
   @override
   void initState() {
     super.initState();
@@ -39,7 +45,7 @@ class _VanStockScreenState extends State<VanStockScreen> {
       appBar: AppBar(
         iconTheme: const IconThemeData(color: AppConfig.backgroundColor),
         title: const Text(
-          'Van Stocks',
+          'Select Products',
           style: TextStyle(color: AppConfig.backgroundColor),
         ),
         backgroundColor: AppConfig.colorPrimary,
@@ -124,10 +130,10 @@ class _VanStockScreenState extends State<VanStockScreen> {
                       child: ListView.separated(
                         separatorBuilder: (BuildContext context, int index) =>
                             CommonWidgets.verticalSpace(1),
-                        itemCount: products.result!.data!.length,
+                        itemCount: products.data!.length,
                         shrinkWrap: true,
                         itemBuilder: (context, index) =>
-                            _productsCard(products.result!.data![index], index),
+                            _productsCard(products.data![index], index),
                       ),
                     )
                   : (_noData && _initDone)
@@ -176,75 +182,96 @@ class _VanStockScreenState extends State<VanStockScreen> {
   }
 
   Widget _productsCard(Data data, int index) {
-    return Card(
-      elevation: 3,
-      child: Container(
-        width: SizeConfig.blockSizeHorizontal * 90,
-        decoration: BoxDecoration(
-          border: Border.all(
-              color: selectedItems.contains(index)
-                  ? AppConfig.colorPrimary
-                  : Colors.transparent),
-          color: AppConfig.backgroundColor,
-          borderRadius: const BorderRadius.all(
-            Radius.circular(10),
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          if (selectedItems.contains(index)) {
+            int id = data.id!;
+            removeItem(id);
+            selectedItems.remove(index);
+          } else {
+            List units = [];
+            selectedItems.add(index);
+            for (var i in data.detail!) {
+              units.add(i.unit);
+            }
+            addItem(
+                data.detail![0].name ?? '',
+                data.invoiceNo ?? '',
+                data.id ?? 0,
+                data.detail![0].baseUnitQty ?? 0,
+                data.detail![0].baseUnitId ?? 0,
+                data.detail![0].mrp ?? 0,
+                customerId ?? 0,
+                data.detail![0].rate ?? 0,
+                data.detail![0].taxAmt ?? 0,
+                data.detail![0].prodiscount ?? 0,
+                units);
+            Navigator.pushReplacementNamed(context, SalesScreen.routeName);
+          }
+        });
+      },
+      child: Card(
+        elevation: 3,
+        child: Container(
+          height: SizeConfig.blockSizeVertical * 8,
+          width: SizeConfig.blockSizeHorizontal * 90,
+          decoration: BoxDecoration(
+            border: Border.all(
+                color: selectedItems.contains(index)
+                    ? AppConfig.colorPrimary
+                    : Colors.transparent),
+            color: AppConfig.backgroundColor,
+            borderRadius: const BorderRadius.all(
+              Radius.circular(10),
+            ),
           ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(5.0),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 50,
-                height: 50,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(15.0),
-                  child: FadeInImage(
-                    image: const NetworkImage(
-                        'https://www.vecteezy.com/vector-art/5337799-icon-image-not-found-vector'),
-                    placeholder: const AssetImage('Assets/Images/no_image.jpg'),
-                    imageErrorBuilder: (context, error, stackTrace) {
-                      return Image.asset('Assets/Images/no_image.jpg',
-                          fit: BoxFit.fitWidth);
-                    },
-                    fit: BoxFit.fitWidth,
-                  ),
-                ),
-              ),
-              CommonWidgets.horizontalSpace(3),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Tooltip(
-                    message: (data.name ?? '').toUpperCase(),
-                    child: SizedBox(
-                      width: SizeConfig.blockSizeHorizontal*70,
-                      child: Text(
-                        (data.name?? '').toUpperCase(),
-                        style: TextStyle(
-                            fontSize: AppConfig.paragraphSize,
-                            fontWeight: AppConfig.headLineWeight),
-                      ),
+          child: Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15.0),
+                    child: FadeInImage(
+                      image: const NetworkImage(
+                          'https://www.vecteezy.com/vector-art/5337799-icon-image-not-found-vector'),
+                      placeholder:
+                          const AssetImage('Assets/Images/no_image.jpg'),
+                      imageErrorBuilder: (context, error, stackTrace) {
+                        return Image.asset('Assets/Images/no_image.jpg',
+                            fit: BoxFit.fitWidth);
+                      },
+                      fit: BoxFit.fitWidth,
                     ),
                   ),
-                  Text(
-                    data.code.toString(),
-                    style: TextStyle(fontSize: AppConfig.textCaption3Size),
-                  ),
-                  Row(
-                    children: [
-                      for (int i = 0; i < data.productDetail!.length; i++)
-                        Text(
-                          '${data.productDetail![i].name}:${data.productDetail![i].stock} ', //${formatDivisionResult(products.result!.data![0].quandity!, qunatityData.result!.data![i].qty!, '')} ',
-                          style: TextStyle(
-                              fontSize: AppConfig.textCaption3Size,
-                              fontWeight: AppConfig.headLineWeight),
+                ),
+                CommonWidgets.horizontalSpace(3),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Tooltip(
+                      message: data.detail![0].name!.toUpperCase(),
+                      child: SizedBox(
+                        width: SizeConfig.blockSizeHorizontal * 70,
+                        child: Text(
+                          data.detail![0].name!.toUpperCase(),
+                          style: TextStyle(fontSize: AppConfig.paragraphSize),
                         ),
-                    ],
-                  )
-                ],
-              ),
-            ],
+                      ),
+                    ),
+                    Text(
+                      data.detail![0].code.toString(),
+                      style: TextStyle(
+                          fontSize: AppConfig.textCaption3Size,
+                          fontWeight: AppConfig.headLineWeight),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -254,88 +281,58 @@ class _VanStockScreenState extends State<VanStockScreen> {
   Future<void> _getProducts() async {
     RestDatasource api = RestDatasource();
     dynamic resJson = await api.getDetails(
-        '/api/get_van_stock?store_id=${AppState().storeId}&van_id=${AppState().vanId}',
-        AppState().token); //${AppState().storeId}
+        '/api/vansale.index?store_id=${AppState().storeId}&van_id=${AppState().vanId}',
+        AppState().token); //
 
-    if (resJson['result']['data'] != null &&
-        resJson['result']['data'].isNotEmpty) {
-      products = VanStockData.fromJson(resJson);
-      _getQuantity();
-    } else {
+    if (resJson['data'] != null) {
+      products = VanSaleProducts.fromJson(resJson);
       setState(() {
         _initDone = true;
+      });
+    } else {
+      setState(() {
         _noData = true;
+        _initDone = true;
       });
     }
   }
 
-  Future<void> _getQuantity() async {
-    RestDatasource api = RestDatasource();
-    for (var i in products.result!.data!) {
-      for (var j in i.productDetail!) {
-        dynamic resJson = await api.getDetails(
-            '/api/get_van_stock_detail?product_id=${j.productId}&van_id=${AppState().vanId}&unit=${j.unit}',
-            AppState().token); //${AppState().storeId}
-        print('Quan $resJson');
-        if (resJson['status'] == 'success') {
-          qunatityData = Qty.VanStockQuandity.fromJson(resJson);
-          j.stock = (qunatityData.result!.data is List)
-              ? 0
-              : qunatityData.result!.data ?? 0;
-        } else {
-          if (mounted) {
-            CommonWidgets.showDialogueBox(
-                context: context, title: 'Error', msg: 'Something went wrong');
-          }
-        }
-      }
-    }
-    setState(() {
-      _initDone = true;
-    });
-  }
-
-  void addItem(String name, String code, int id, int quantity) async {
+  void addItem(
+      String name,
+      String code,
+      int id,
+      int quantity,
+      int baseUnit,
+      num mrp,
+      int cuId,
+      num total,
+      num tax,
+      num discount,
+      List unitData) async {
     Map<String, dynamic> newItem = {
+      "customerId": cuId,
       "name": name,
       "code": code,
-      "id": id,
-      "quantity": quantity
+      "itemId": id,
+      "quantity": quantity,
+      "unit": baseUnit,
+      "mrp": mrp,
+      'discount': discount,
+      'total': total,
+      'tax': tax,
+      'unitData': unitData
     };
 
     // Check for duplicates before adding
     bool containsDuplicate = items.any((item) => item['id'] == id);
     if (!containsDuplicate) {
       items.add(newItem);
-      await StockHistory.addToStockHistory(newItem);
+      await SaleskHistory.addToSalesHistory(newItem);
     }
   }
 
   // Function to remove an item from the list by id
   void removeItem(int id) {
     items.removeWhere((item) => item['id'] == id);
-  }
-
-  String formatDivisionResult(int numerator, int denominator, String name) {
-    if (denominator == 0) {
-      throw ArgumentError("Denominator cannot be zero.");
-    }
-
-    double result = numerator / denominator;
-
-    result = double.parse(result.toStringAsFixed(1));
-
-    int integerPart = result.floor();
-    double fractionalPart = result - integerPart;
-
-    int fractionalPartInPieces = (fractionalPart * 10).round();
-
-    if (fractionalPartInPieces != 0) {
-      return (integerPart != 0)
-          ? "$integerPart $name $fractionalPartInPieces Piece"
-          : "$fractionalPartInPieces Piece";
-    } else {
-      return "$integerPart";
-    }
   }
 }

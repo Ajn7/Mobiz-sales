@@ -8,6 +8,7 @@ class AppState {
   String? name;
   String? email;
   int? userId;
+  int? vanId;
   int? storeId;
   int? roleId;
   String? appVersion;
@@ -31,10 +32,11 @@ class AppState {
     token = "";
     userType = "";
     name = "";
-    email="";
+    email = "";
     userId;
     storeId;
     roleId;
+    vanId;
     appVersion = "";
     buildNumber = "";
     osType = "";
@@ -75,6 +77,7 @@ class AppState {
     isMobileVerified = json['is_mobile_verified'];
     isEmailVerified = json['is_email_verified'];
     isTwoFactorEnabled = json["is_two_factor_enabled"];
+    vanId = json["van_id"];
   }
 
   ////////// retrieve as json to store it in shared preference
@@ -101,6 +104,7 @@ class AppState {
     data['is_mobile_verified'] = isMobileVerified;
     data['is_email_verified'] = isEmailVerified;
     data["is_two_factor_enabled"] = isTwoFactorEnabled;
+    data['van_id'] = vanId;
     return data;
   }
 }
