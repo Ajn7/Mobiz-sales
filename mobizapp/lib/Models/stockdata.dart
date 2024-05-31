@@ -27,10 +27,10 @@ class StockHistory {
     final prefs = await SharedPreferences.getInstance();
     final history = await getStockHistory();
 
-    int newItemId = newItem['id'];
+    String newItemId = newItem['itemId'];
 
     bool containsDuplicate = history.any((entry) {
-      return entry['id'] == newItemId;
+      return entry['itemId'] == newItemId;
     });
 
     if (!containsDuplicate) {
@@ -41,13 +41,13 @@ class StockHistory {
 
   // Function to update a specific key-value pair for an item based on its id
   static Future<void> updateStockItem(
-      int itemId, String key, dynamic value) async {
+      String itemId, String key, dynamic value) async {
     final prefs = await SharedPreferences.getInstance();
     final history = await getStockHistory();
 
     // Find the item by id
     for (int i = 0; i < history.length; i++) {
-      if (history[i]['id'] == itemId) {
+      if (history[i]['itemId'] == itemId) {
         history[i][key] = value;
         break;
       }
@@ -57,10 +57,10 @@ class StockHistory {
     await saveStockHistory(history);
   }
 
-  static Future<void> clearStockHistory(int itemId) async {
+  static Future<void> clearStockHistory(String itemId) async {
     final prefs = await SharedPreferences.getInstance();
     final history = await getStockHistory();
-    history.removeWhere((entry) => entry['id'] == itemId);
+    history.removeWhere((entry) => entry['itemId'] == itemId);
     await saveStockHistory(history);
   }
 

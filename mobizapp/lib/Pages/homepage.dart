@@ -104,6 +104,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     conformation(context);
                   },
                 ),
+                const Divider(),
+                const Text('v0.0.5'),
               ],
             ),
           ),

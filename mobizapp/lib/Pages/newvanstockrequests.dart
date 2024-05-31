@@ -202,7 +202,7 @@ class _VanStocksState extends State<VanStocks> {
                         selectedValue[index] = newValue!;
                       });
                       StockHistory.updateStockItem(
-                          data['id'], 'selectedUnit', selectedValue[index]);
+                          data['itemId'], 'selectedUnit', selectedValue[index]);
                     },
                     items: menuItems[index]),
                 CommonWidgets.horizontalSpace(2),
@@ -223,7 +223,7 @@ class _VanStocksState extends State<VanStocks> {
                           },
                         );
                         StockHistory.updateStockItem(
-                            data['id'], 'quantity', data['quantity']);
+                            data['itemId'], 'quantity', data['quantity']);
                       },
                       child: CircleAvatar(
                         radius: 9,
@@ -244,7 +244,7 @@ class _VanStocksState extends State<VanStocks> {
                           data['quantity'] = data['quantity'] + 1;
                         });
                         StockHistory.updateStockItem(
-                            data['id'], 'quantity', data['quantity']);
+                            data['itemId'], 'quantity', data['quantity']);
                       },
                       child: const CircleAvatar(
                         radius: 9,
@@ -260,7 +260,7 @@ class _VanStocksState extends State<VanStocks> {
                 CommonWidgets.horizontalSpace(3),
                 GestureDetector(
                   onTap: () {
-                    StockHistory.clearStockHistory(data['id'])
+                    StockHistory.clearStockHistory(data['itemId'])
                         .then((value) => _getStockData());
                   },
                   child: const Icon(

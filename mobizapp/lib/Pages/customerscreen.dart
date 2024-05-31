@@ -125,6 +125,7 @@ class _CustomersDataScreenState extends State<CustomersDataScreen> {
           'creditLimit': data.creditLimit,
           'balance': '',
           'total': '',
+          'id': data.id
         });
       },
       child: Card(
@@ -164,8 +165,7 @@ class _CustomersDataScreenState extends State<CustomersDataScreen> {
                     SizedBox(
                       width: SizeConfig.blockSizeHorizontal * 80,
                       child: Text(
-                        (data.name ?? '')
-                            .toUpperCase(),
+                        (data.name ?? '').toUpperCase(),
                         style: TextStyle(
                             fontSize: AppConfig.paragraphSize,
                             fontWeight: AppConfig.headLineWeight),

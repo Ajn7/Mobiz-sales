@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:mobizapp/Models/appstate.dart';
 import 'package:mobizapp/Pages/newvanstockrequests.dart';
-import 'package:mobizapp/Pages/salesscreen.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../Models/ProductDataModelClass.dart';
 import '../Models/productquantirydetails.dart' as Qty;
 import '../Models/salesdata.dart';
-import '../Models/vansaleproduct.dart';
 import '../Utilities/rest_ds.dart';
 import '../confg/appconfig.dart';
 import '../confg/sizeconfig.dart';
 import '../Components/commonwidgets.dart';
+import 'salesscreen.dart';
 
 class SalesSelectProductsScreen extends StatefulWidget {
   static const routeName = "/SalesSelectProductScreen";
@@ -23,16 +23,17 @@ class SalesSelectProductsScreen extends StatefulWidget {
 
 class _SalesSelectProductsScreenState extends State<SalesSelectProductsScreen> {
   final TextEditingController _searchData = TextEditingController();
-  VanSaleProducts products = VanSaleProducts();
+  ProductDataModel products = ProductDataModel();
   bool _initDone = false;
   bool _noData = false;
   List<int> selectedItems = [];
   List<Map<String, dynamic>> items = [];
   bool _search = false;
-  int? customerId;
+
+  int? id;
+  String? name;
 
   Qty.ProductQuantityDetails qunatityData = Qty.ProductQuantityDetails();
-  List<Qty.ProductQuantityDetails> quantity = [];
   @override
   void initState() {
     super.initState();
@@ -41,6 +42,13 @@ class _SalesSelectProductsScreenState extends State<SalesSelectProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (ModalRoute.of(context)!.settings.arguments != null) {
+      final Map<String, dynamic>? params =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+      id = params!['customerId'];
+      name = params!['name'];
+    }
+
     return Scaffold(
       appBar: AppBar(
         iconTheme: const IconThemeData(color: AppConfig.backgroundColor),
@@ -190,31 +198,31 @@ class _SalesSelectProductsScreenState extends State<SalesSelectProductsScreen> {
             removeItem(id);
             selectedItems.remove(index);
           } else {
-            List units = [];
             selectedItems.add(index);
-            for (var i in data.detail!) {
-              units.add(i.unit);
-            }
+
             addItem(
-                data.detail![0].name ?? '',
-                data.invoiceNo ?? '',
-                data.id ?? 0,
-                data.detail![0].baseUnitQty ?? 0,
-                data.detail![0].baseUnitId ?? 0,
-                data.detail![0].mrp ?? 0,
-                customerId ?? 0,
-                data.detail![0].rate ?? 0,
-                data.detail![0].taxAmt ?? 0,
-                data.detail![0].prodiscount ?? 0,
-                units);
-            Navigator.pushReplacementNamed(context, SalesScreen.routeName);
+              data.name!,
+              data.code!,
+              data.id!,
+              data.baseUnitQty!,
+              data.baseUnitId!,
+              data.price!,
+              id!,
+              data.taxPercentage!,
+              num.parse(data.baseUnitDiscount!),
+              data.unitData.result!.data!,
+              '', //type
+              data.price!,
+              data.proImage!,
+            );
+            Navigator.pushReplacementNamed(context, SalesScreen.routeName,
+                arguments: {'customerId': id, 'name': name});
           }
         });
       },
       child: Card(
         elevation: 3,
         child: Container(
-          height: SizeConfig.blockSizeVertical * 8,
           width: SizeConfig.blockSizeHorizontal * 90,
           decoration: BoxDecoration(
             border: Border.all(
@@ -236,8 +244,8 @@ class _SalesSelectProductsScreenState extends State<SalesSelectProductsScreen> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(15.0),
                     child: FadeInImage(
-                      image: const NetworkImage(
-                          'https://www.vecteezy.com/vector-art/5337799-icon-image-not-found-vector'),
+                      image: NetworkImage(
+                          'https://mobiz-shop.yes45.in/uploads/product/${data.proImage}'),
                       placeholder:
                           const AssetImage('Assets/Images/no_image.jpg'),
                       imageErrorBuilder: (context, error, stackTrace) {
@@ -253,21 +261,40 @@ class _SalesSelectProductsScreenState extends State<SalesSelectProductsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Tooltip(
-                      message: data.detail![0].name!.toUpperCase(),
+                      message: data.name!.toUpperCase(),
                       child: SizedBox(
                         width: SizeConfig.blockSizeHorizontal * 70,
                         child: Text(
-                          data.detail![0].name!.toUpperCase(),
+                          data.name!.toUpperCase(),
                           style: TextStyle(fontSize: AppConfig.paragraphSize),
                         ),
                       ),
                     ),
                     Text(
-                      data.detail![0].code.toString(),
+                      data.code.toString(),
                       style: TextStyle(
                           fontSize: AppConfig.textCaption3Size,
                           fontWeight: AppConfig.headLineWeight),
                     ),
+                    Row(
+                      children: [
+                        for (int i = 0;
+                            i < data.unitData.result!.data!.length;
+                            i++)
+                          Text(
+                            (i == 0)
+                                ? '${data.unitData.result!.data![i].units![0].name!}: ${formatDivisionResult(data.unitData.result!.data![i].qty!, 1, data.unitData.result!.data![i].units![0].name!)}'
+                                : (i == 1)
+                                    ? '| ${data.unitData.result!.data![i].units![0].name!}: ${formatDivisionResult(data.unitData.result!.data![i].qty!, 1, data.unitData.result!.data![i].units![0].name!)} '
+                                    : (i == 2)
+                                        ? '| ${data.unitData.result.data![i].units![0].name!}: ${formatDivisionResult(data.unitData.result!.data![i].qty!, 1, data.unitData.result!.data![i].units![0].name!)}'
+                                        : '| ${data.unitData.result.data![i].units![0].name!}: ${formatDivisionResult(data.unitData.result!.data![i].qty!, 1, data.unitData.result!.data![i].units![0].name!)}',
+                            style: TextStyle(
+                                fontSize: AppConfig.textCaption3Size,
+                                fontWeight: AppConfig.headLineWeight),
+                          )
+                      ],
+                    )
                   ],
                 ),
               ],
@@ -281,14 +308,13 @@ class _SalesSelectProductsScreenState extends State<SalesSelectProductsScreen> {
   Future<void> _getProducts() async {
     RestDatasource api = RestDatasource();
     dynamic resJson = await api.getDetails(
-        '/api/vansale.index?store_id=${AppState().storeId}&van_id=${AppState().vanId}',
-        AppState().token); //
+        '/api/get_product?store_id=${AppState().storeId}', AppState().token); //
 
     if (resJson['data'] != null) {
-      products = VanSaleProducts.fromJson(resJson);
-      setState(() {
-        _initDone = true;
-      });
+      products = ProductDataModel.fromJson(resJson);
+      for (int i = 0; i < products.data!.length; i++) {
+        _getQuantity(i, products.data![i].id!);
+      }
     } else {
       setState(() {
         _noData = true;
@@ -298,17 +324,20 @@ class _SalesSelectProductsScreenState extends State<SalesSelectProductsScreen> {
   }
 
   void addItem(
-      String name,
-      String code,
-      int id,
-      int quantity,
-      int baseUnit,
-      num mrp,
-      int cuId,
-      num total,
-      num tax,
-      num discount,
-      List unitData) async {
+    String name,
+    String code,
+    int id,
+    int quantity,
+    int baseUnit,
+    num mrp,
+    int cuId,
+    num tax,
+    num discount,
+    List unitData,
+    String type,
+    num total,
+    String image,
+  ) async {
     Map<String, dynamic> newItem = {
       "customerId": cuId,
       "name": name,
@@ -320,7 +349,11 @@ class _SalesSelectProductsScreenState extends State<SalesSelectProductsScreen> {
       'discount': discount,
       'total': total,
       'tax': tax,
-      'unitData': unitData
+      'unitData': unitData,
+      'type': type,
+      'oldmrp': mrp,
+      'icode': '$id${DateTime.now()}',
+      "image": image
     };
 
     // Check for duplicates before adding
@@ -334,5 +367,51 @@ class _SalesSelectProductsScreenState extends State<SalesSelectProductsScreen> {
   // Function to remove an item from the list by id
   void removeItem(int id) {
     items.removeWhere((item) => item['id'] == id);
+  }
+
+  Future<void> _getQuantity(int i, int id) async {
+    RestDatasource api = RestDatasource();
+    dynamic resJson = await api.getDetails(
+        '/api/get_product_detail?product_id=$id',
+        AppState().token); //${AppState().storeId}
+
+    if (resJson['status'] == "success") {
+      qunatityData = Qty.ProductQuantityDetails.fromJson(resJson);
+      products.data![i].unitData = qunatityData;
+      if (i == products.data!.length - 1) {
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) {
+            setState(
+              () {
+                _initDone = true;
+              },
+            );
+          }
+        });
+      }
+    }
+  }
+
+  String formatDivisionResult(int numerator, int denominator, String name) {
+    if (denominator == 0) {
+      throw ArgumentError("Denominator cannot be zero.");
+    }
+    print('Datas $numerator, $denominator');
+    double result = numerator / denominator;
+
+    result = double.parse(result.toStringAsFixed(1));
+
+    int integerPart = result.floor();
+    double fractionalPart = result - integerPart;
+
+    int fractionalPartInPieces = (fractionalPart * 10).round();
+
+    if (fractionalPartInPieces != 0) {
+      return (integerPart != 0)
+          ? "$integerPart $name $fractionalPartInPieces Piece"
+          : "$fractionalPartInPieces Piece";
+    } else {
+      return "$integerPart";
+    }
   }
 }

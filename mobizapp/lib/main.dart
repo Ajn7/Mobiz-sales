@@ -11,6 +11,7 @@ import 'package:mobizapp/Pages/newvanstockrequests.dart';
 import 'package:mobizapp/Pages/vanstockdata.dart';
 import 'package:mobizapp/Pages/vanstockrequest.dart';
 
+import 'Pages/saleinvoices.dart';
 import 'Pages/salesselectproducts.dart';
 
 void main() {
@@ -43,8 +44,10 @@ class MyApp extends StatelessWidget {
           CustomersDataScreen.routeName: (context) => CustomersDataScreen(),
           SalesScreen.routeName: (context) => SalesScreen(),
           VanStockScreen.routeName: (context) => VanStockScreen(),
-          CustomerDetailsScreen.routeName: (context) => CustomerDetailsScreen(),
-          SalesSelectProductsScreen.routeName: (context) => SalesSelectProductsScreen(),
+          CustomerDetailsScreen.routeName: (context) => const CustomerDetailsScreen(),
+          SalesSelectProductsScreen.routeName: (context) =>
+              SalesSelectProductsScreen(),
+          SaleInvoiceScrreen.routeName: (context) => const SaleInvoiceScrreen()
         });
   }
 }

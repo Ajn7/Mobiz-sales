@@ -54,14 +54,25 @@ class Data {
   int? productId;
   int? unit;
   int? qty;
+  dynamic minPrice;
+  dynamic price;
   List<Units>? units;
 
-  Data({this.id, this.productId, this.unit, this.qty, this.units});
+  Data(
+      {this.id,
+      this.productId,
+      this.unit,
+      this.qty,
+      this.units,
+      this.minPrice,
+      this.price});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     productId = json['product_id'];
     unit = json['unit'];
+    minPrice = json['minimum_price'];
+    price = json['price'];
     qty = json['qty'];
     if (json['units'] != null) {
       units = <Units>[];
@@ -77,6 +88,8 @@ class Data {
     data['product_id'] = this.productId;
     data['unit'] = this.unit;
     data['qty'] = this.qty;
+    data['price'] = this.price;
+    data['minPrice'] = this.minPrice;
     if (this.units != null) {
       data['units'] = this.units!.map((v) => v.toJson()).toList();
     }

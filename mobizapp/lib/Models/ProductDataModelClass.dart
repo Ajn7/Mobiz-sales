@@ -115,7 +115,7 @@ class Data {
       this.createdAt,
       this.updatedAt,
       this.unitData,
-      this.deletedAt});
+      this.deletedAt});//
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];

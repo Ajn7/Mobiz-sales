@@ -162,8 +162,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(15.0),
                   child: FadeInImage(
-                    image: const NetworkImage(
-                        'https://www.vecteezy.com/vector-art/5337799-icon-image-not-found-vector'),
+                    image:  NetworkImage(
+                        'https://mobiz-shop.yes45.in/uploads/product/${data.proImage}'),
                     placeholder: const AssetImage('Assets/Images/no_image.jpg'),
                     imageErrorBuilder: (context, error, stackTrace) {
                       return Image.asset('Assets/Images/no_image.jpg',

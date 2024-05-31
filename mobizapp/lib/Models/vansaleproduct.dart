@@ -8,7 +8,7 @@ class VanSaleProducts {
     if (json['data'] != null) {
       data = <Data>[];
       json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
+        data!.add(Data.fromJson(v));
       });
     }
     success = json['success'];
@@ -32,13 +32,14 @@ class Data {
   String? inTime;
   String? invoiceNo;
   String? deliveryNo;
-  int? otherCharge;
-  int? discount;
-  int? total;
-  int? totalTax;
-  int? grandTotal;
-  int? receipt;
-  int? balance;
+  num? otherCharge;
+  num? discount;
+  String? roundOff;
+  num? total;
+  num? totalTax;
+  num? grandTotal;
+  num? receipt;
+  num? balance;
   int? orderType;
   int? ifVat;
   int? vanId;
@@ -57,6 +58,7 @@ class Data {
       this.inDate,
       this.inTime,
       this.invoiceNo,
+      this.roundOff,
       this.deliveryNo,
       this.otherCharge,
       this.discount,
@@ -88,6 +90,7 @@ class Data {
     discount = json['discount'];
     total = json['total'];
     totalTax = json['total_tax'];
+    roundOff = json['round_off'];
     grandTotal = json['grand_total'];
     receipt = json['receipt'];
     balance = json['balance'];
@@ -103,13 +106,13 @@ class Data {
     if (json['detail'] != null) {
       detail = <Detail>[];
       json['detail'].forEach((v) {
-        detail!.add(new Detail.fromJson(v));
+        detail!.add(Detail.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = {};
     data['id'] = this.id;
     data['customer_id'] = this.customerId;
     data['bill_mode'] = this.billMode;
@@ -144,14 +147,15 @@ class Detail {
   int? id;
   int? goodsOutId;
   int? itemId;
+  String? productType;
   String? unit;
   int? convertQty;
   int? quantity;
-  num? rate;
-  num? prodiscount;
+  int? rate;
+  int? prodiscount;
   int? taxable;
   num? taxAmt;
-  num? mrp;
+  int? mrp;
   num? amount;
   int? vanId;
   int? userId;
@@ -220,6 +224,7 @@ class Detail {
       this.deletedAt,
       this.code,
       this.name,
+      this.productType,
       this.proImage,
       this.categoryId,
       this.subCategoryId,
@@ -260,6 +265,7 @@ class Detail {
     id = json['id'];
     goodsOutId = json['goods_out_id'];
     itemId = json['item_id'];
+    productType=json['product_type'];
     unit = json['unit'];
     convertQty = json['convert_qty'];
     quantity = json['quantity'];
@@ -322,6 +328,7 @@ class Detail {
     data['item_id'] = this.itemId;
     data['unit'] = this.unit;
     data['convert_qty'] = this.convertQty;
+    data['product_type'] = this.productType;
     data['quantity'] = this.quantity;
     data['rate'] = this.rate;
     data['prodiscount'] = this.prodiscount;

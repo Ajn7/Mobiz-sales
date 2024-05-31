@@ -27,10 +27,10 @@ class SaleskHistory {
     final prefs = await SharedPreferences.getInstance();
     final history = await getSalesHistory();
 
-    int newItemId = newItem['itemId'];
+    String newItemId = newItem['icode'];
 
     bool containsDuplicate = history.any((entry) {
-      return entry['itemId'] == newItemId;
+      return entry['icode'] == newItemId;
     });
 
     if (!containsDuplicate) {
@@ -39,15 +39,33 @@ class SaleskHistory {
     }
   }
 
-  static Future<void> clearSalesHistory(int itemId) async {
+  static Future<void> clearSalesHistory(String itemId) async {
     final prefs = await SharedPreferences.getInstance();
     final history = await getSalesHistory();
-    history.removeWhere((entry) => entry['itemId'] == itemId);
+    history.removeWhere((entry) => entry['icode'] == itemId);
     await saveSalesHistory(history);
   }
 
   static Future<void> clearAllSalesHistory() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('salesHistory');
+  }
+
+  // Function to update a specific key-value pair for an item based on its id
+  static Future<void> updateSaleItem(
+      String itemId, String key, dynamic value) async {
+    final prefs = await SharedPreferences.getInstance();
+    final history = await getSalesHistory();
+
+    // Find the item by id
+    for (int i = 0; i < history.length; i++) {
+      if (history[i]['icode'] == itemId) {
+        history[i][key] = value;
+        break;
+      }
+    }
+
+    // Save the updated history
+    await saveSalesHistory(history);
   }
 }

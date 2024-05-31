@@ -224,8 +224,8 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(15.0),
                     child: FadeInImage(
-                      image: const NetworkImage(
-                          'https://www.vecteezy.com/vector-art/5337799-icon-image-not-found-vector'),
+                      image:  NetworkImage(
+                          'https://mobiz-shop.yes45.in/uploads/product/${data.proImage}'),
                       placeholder:
                           const AssetImage('Assets/Images/no_image.jpg'),
                       imageErrorBuilder: (context, error, stackTrace) {
@@ -262,13 +262,13 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
                             i < data.unitData.result!.data!.length;
                             i++)
                           Text(
-                            (i == 0)
-                                ? '${data.unitData.result!.data![i].units![0].name!}: ${formatDivisionResult(data.baseUnitQty!, data.unitData.result!.data![i].qty!, data.unitData.result!.data![i].units![0].name!)}'
+                            (i == 0)//data.baseUnitQty!,
+                                ? '${data.unitData.result!.data![i].units![0].name!}: ${formatDivisionResult(data.unitData.result!.data![i].qty!, 1,data.unitData.result!.data![i].units![0].name!)}'
                                 : (i == 1)
-                                    ? '| ${data.unitData.result!.data![i].units![0].name!}: ${formatDivisionResult(data.secondUnitQty!, data.unitData.result!.data![i].qty!, data.unitData.result!.data![i].units![0].name!)} '
+                                    ? '| ${data.unitData.result!.data![i].units![0].name!}: ${formatDivisionResult( data.unitData.result!.data![i].qty!,1, data.unitData.result!.data![i].units![0].name!)} '
                                     : (i == 2)
-                                        ? '| ${data.unitData.result.data![i].units![0].name!}: ${formatDivisionResult(data.thirdUnitQty!, data.unitData.result!.data![i].qty!, data.unitData.result!.data![i].units![0].name!)}'
-                                        : '| ${data.unitData.result.data![i].units![0].name!}: ${formatDivisionResult(data.fourthUnitQty!, data.unitData.result!.data![i].qty!, data.unitData.result!.data![i].units![0].name!)}',
+                                        ? '| ${data.unitData.result.data![i].units![0].name!}: ${formatDivisionResult(data.unitData.result!.data![i].qty!,1, data.unitData.result!.data![i].units![0].name!)}'
+                                        : '| ${data.unitData.result.data![i].units![0].name!}: ${formatDivisionResult( data.unitData.result!.data![i].qty!,1, data.unitData.result!.data![i].units![0].name!)}',
                             style: TextStyle(
                                 fontSize: AppConfig.textCaption3Size,
                                 fontWeight: AppConfig.headLineWeight),
@@ -312,6 +312,7 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
       "quantity": quantity,
       "unit": baseUnit,
       "unitData": unitData,
+      'itemId': '$id${DateTime.now()}'
     };
 
     // Check for duplicates before adding
