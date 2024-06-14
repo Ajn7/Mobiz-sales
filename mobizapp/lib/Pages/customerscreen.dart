@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:mobizapp/Models/appstate.dart';
 import 'package:mobizapp/Models/customerdetails.dart';
 import 'package:mobizapp/Pages/customerdetailscreen.dart';
+import 'package:mobizapp/Pages/customerregistration.dart';
 import 'package:mobizapp/Pages/salesscreen.dart';
 import 'package:mobizapp/Utilities/rest_ds.dart';
 import 'package:mobizapp/confg/appconfig.dart';
@@ -42,7 +43,9 @@ class _CustomersDataScreenState extends State<CustomersDataScreen> {
         ),
         actions: [
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              Navigator.pushNamed(context, CustomerRegistration.routeName);
+            },
             child: const Icon(
               Icons.add,
               size: 30,
@@ -125,7 +128,7 @@ class _CustomersDataScreenState extends State<CustomersDataScreen> {
           'creditLimit': data.creditLimit,
           'balance': '',
           'total': '',
-          'id': data.id
+          'id': data.id,
         });
       },
       child: Card(
@@ -184,7 +187,7 @@ class _CustomersDataScreenState extends State<CustomersDataScreen> {
                         ),
                         const Spacer(),
                         const Icon(
-                          Icons.arrow_forward_ios,
+                          Icons.arrow_forward,
                           size: 20,
                         )
                       ]),
@@ -207,7 +210,8 @@ class _CustomersDataScreenState extends State<CustomersDataScreen> {
     RestDatasource api = RestDatasource();
 
     dynamic resJson = await api.getDetails(
-        '/api/get_customer?store_id=${AppState().storeId}', AppState().token);
+        '/api/get_customer?store_id=${AppState().storeId}&route_id=${AppState().routeId}',
+        AppState().token);
     print('Cust $resJson');
     if (resJson['data'] != null && resJson['data'].length > 0) {
       customer = CustomerData.fromJson(resJson);

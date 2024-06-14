@@ -10,7 +10,7 @@ class AppState {
   int? userId;
   int? vanId;
   int? storeId;
-  int? roleId;
+  int? routeId;
   String? appVersion;
   String? buildNumber;
   String? osType;
@@ -35,7 +35,7 @@ class AppState {
     email = "";
     userId;
     storeId;
-    roleId;
+    routeId;
     vanId;
     appVersion = "";
     buildNumber = "";
@@ -60,7 +60,7 @@ class AppState {
     isExistingUser = json['is_existing_user'];
     token = json['token'];
     storeId = json['store_id'];
-    roleId = json['rol_id'];
+    routeId = json['route_id'];
     userType = json['user_type'];
     name = json['name'];
     email = json['email'];
@@ -91,7 +91,7 @@ class AppState {
     data['name'] = name;
     data['email'] = email;
     data['store_id'] = storeId;
-    data['rol_id'] = roleId;
+    data['route_id'] = routeId;
     data['app_version'] = appVersion;
     data['build_number'] = buildNumber;
     data['os_type'] = osType;

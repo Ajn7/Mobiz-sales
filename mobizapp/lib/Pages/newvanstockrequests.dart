@@ -32,6 +32,8 @@ class _VanStocksState extends State<VanStocks> {
   bool created = false;
   bool _loaded = true;
 
+  final TextEditingController _qty = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -151,14 +153,14 @@ class _VanStocksState extends State<VanStocks> {
       dynamic listData = stocks[index]['unitData'].toSet().toList();
       for (int i = 0; i < listData.length; i++) {
         menuItems[index].add(DropdownMenuItem(
-            value: (listData[i]['units'][0]['name']).toString(),
-            child: Text((listData[i]['units'][0]['name']).toString())));
+            value: (listData[i]['name']).toString(),
+            child: Text((listData[i]['name']).toString())));
         selectedValue[index] = (stocks[index]['selectedUnit'] != null)
             ? stocks[index]['selectedUnit']
-            : listData[i]['units'][0]['name'].toString();
+            : listData[i]['name'].toString();
         selectedId[index] = {
-          'name': listData[i]['units'][0]['name'].toString(),
-          'id': listData[i]['units'][0]['id'],
+          'name': listData[i]['name'].toString(),
+          'id': listData[i]['id'],
         };
       }
     }
@@ -181,96 +183,177 @@ class _VanStocksState extends State<VanStocks> {
         child: ListTile(
           title: Tooltip(
             message: data['name'].toString().toUpperCase(),
-            child: Text(data['name'].toString().toUpperCase(),
-                style: TextStyle(fontSize: AppConfig.textCaption2Size)),
-          ),
-          subtitle: Text(
-            data['code'],
-            style: TextStyle(fontSize: AppConfig.textCaption3Size),
-          ),
-          trailing:
-              //Text(data['quantity'].toString()),
-              SizedBox(
-            width: SizeConfig.blockSizeHorizontal * 45,
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Spacer(),
-                DropdownButton(
-                    value: selectedValue[index],
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedValue[index] = newValue!;
-                      });
-                      StockHistory.updateStockItem(
-                          data['itemId'], 'selectedUnit', selectedValue[index]);
-                    },
-                    items: menuItems[index]),
-                CommonWidgets.horizontalSpace(2),
-                Text(
-                  data['quantity'].toString(),
-                  style: const TextStyle(fontSize: 16),
-                ),
-                CommonWidgets.horizontalSpace(3),
-                Column(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        setState(
-                          () {
-                            if (data['quantity'] > 1) {
-                              data['quantity'] = data['quantity'] - 1;
-                            }
-                          },
-                        );
-                        StockHistory.updateStockItem(
-                            data['itemId'], 'quantity', data['quantity']);
-                      },
-                      child: CircleAvatar(
-                        radius: 9,
-                        backgroundColor: Colors.red,
-                        child: Center(
-                          child: Text('-',
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  color: AppConfig.backgroundColor,
-                                  fontWeight: AppConfig.headLineWeight)),
-                        ),
-                      ),
-                    ),
-                    CommonWidgets.verticalSpace(2),
-                    GestureDetector(
-                      onTap: () {
+                Align(
+                  alignment: Alignment.topRight,
+                  child: CircleAvatar(
+                    backgroundColor: Colors.grey.withOpacity(0.2),
+                    radius: 8,
+                    child: GestureDetector(
+                      onTap: () async {
                         setState(() {
                           data['quantity'] = data['quantity'] + 1;
                         });
                         StockHistory.updateStockItem(
                             data['itemId'], 'quantity', data['quantity']);
                       },
-                      child: const CircleAvatar(
-                        radius: 9,
-                        backgroundColor: Colors.green,
-                        child: Center(
-                          child: Icon(Icons.add,
-                              size: 14, color: AppConfig.backgroundColor),
-                        ),
+                      child: const Icon(
+                        Icons.close,
+                        size: 13,
+                        color: Colors.red,
                       ),
                     ),
-                  ],
-                ),
-                CommonWidgets.horizontalSpace(3),
-                GestureDetector(
-                  onTap: () {
-                    StockHistory.clearStockHistory(data['itemId'])
-                        .then((value) => _getStockData());
-                  },
-                  child: const Icon(
-                    Icons.delete,
-                    color: Colors.red,
                   ),
                 ),
+                Text(
+                    '${data['code']} | ${data['name'].toString().toUpperCase()}',
+                    style: TextStyle(fontSize: AppConfig.textCaption2Size)),
               ],
             ),
           ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text('Unit :'),
+                  DropdownButton(
+                      value: selectedValue[index],
+                      underline: const SizedBox(),
+                      style: const TextStyle(
+                          color: AppConfig.colorPrimary,
+                          fontWeight: FontWeight.w600),
+                      icon: Container(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedValue[index] = newValue!;
+                        });
+                        StockHistory.updateStockItem(data['itemId'],
+                            'selectedUnit', selectedValue[index]);
+                      },
+                      items: menuItems[index]),
+                  CommonWidgets.horizontalSpace(1),
+                  const Text('|'),
+                  CommonWidgets.horizontalSpace(1),
+                  const Text('Qty :'),
+                  GestureDetector(
+                    onTap: () {
+                      _qty.text = '${data['quantity']}';
+                      showDialog(
+                          barrierDismissible: false,
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text('Quantity'),
+                              content: TextField(
+                                onChanged: (value) async {},
+                                keyboardType: TextInputType.number,
+                                controller: _qty,
+                                decoration:
+                                    const InputDecoration(hintText: "Quantity"),
+                              ),
+                              actions: <Widget>[
+                                MaterialButton(
+                                  color: AppConfig.colorPrimary,
+                                  textColor: Colors.white,
+                                  child: const Text('OK'),
+                                  onPressed: () {
+                                    data['quantity'] = num.parse(_qty.text);
+                                    setState(() {
+                                      StockHistory.updateStockItem(
+                                          data['itemId'],
+                                          'quantity',
+                                          data['quantity']);
+                                    });
+
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                              ],
+                            );
+                          });
+                    },
+                    child: Text(
+                      data['quantity'].toString(),
+                      style: const TextStyle(
+                          fontSize: 16,
+                          color: AppConfig.colorPrimary,
+                          fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // trailing:
+          //     //Text(data['quantity'].toString()),
+          //     SizedBox(
+          //   width: SizeConfig.blockSizeHorizontal * 45,
+          //   child: Row(
+          //     children: [
+          //       const Spacer(),
+          //       CommonWidgets.horizontalSpace(2),
+          //       CommonWidgets.horizontalSpace(3),
+          //       Column(
+          //         children: [
+          //           GestureDetector(
+          //             onTap: () {
+          //               setState(
+          //                 () {
+          //                   if (data['quantity'] > 1) {
+          //                     data['quantity'] = data['quantity'] - 1;
+          //                   }
+          //                 },
+          //               );
+          //             },
+          //             child: CircleAvatar(
+          //               radius: 9,
+          //               backgroundColor: Colors.red,
+          //               child: Center(
+          //                 child: Text('-',
+          //                     style: TextStyle(
+          //                         fontSize: 14,
+          //                         color: AppConfig.backgroundColor,
+          //                         fontWeight: AppConfig.headLineWeight)),
+          //               ),
+          //             ),
+          //           ),
+          //           CommonWidgets.verticalSpace(2),
+          //           GestureDetector(
+          //             onTap: () {
+          //               setState(() {
+          //                 data['quantity'] = data['quantity'] + 1;
+          //               });
+          //               StockHistory.updateStockItem(
+          //                   data['itemId'], 'quantity', data['quantity']);
+          //             },
+          //             child: const CircleAvatar(
+          //               radius: 9,
+          //               backgroundColor: Colors.green,
+          //               child: Center(
+          //                 child: Icon(Icons.add,
+          //                     size: 14, color: AppConfig.backgroundColor),
+          //               ),
+          //             ),
+          //           ),
+          //         ],
+          //       ),
+          //       CommonWidgets.horizontalSpace(3),
+          //       GestureDetector(
+          //         onTap: () {
+          //           StockHistory.clearStockHistory(data['itemId'])
+          //               .then((value) => _getStockData());
+          //         },
+          //         child: const Icon(
+          //           Icons.delete,
+          //           color: Colors.red,
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
         ),
       ),
     );
@@ -289,8 +372,8 @@ class _VanStocksState extends State<VanStocks> {
     int units = 0;
     for (int i = 0; i < stocks.length; i++) {
       for (var j in stocks[i]['unitData']) {
-        if (j['units'][0]['name'] == selectedValue[i]) {
-          units = j['units'][0]['id'];
+        if (j['name'] == selectedValue[i]) {
+          units = j['id'];
         }
       }
       //stocks

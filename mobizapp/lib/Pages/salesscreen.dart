@@ -1,9 +1,8 @@
 import 'dart:convert';
 
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:mobizapp/Models/stockData.dart';
+import 'package:mobizapp/Models/vanstockdata.dart';
 
 import '../Models/salesdata.dart';
 import '../Models/typedetails.dart';
@@ -31,6 +30,7 @@ class _SalesScreenState extends State<SalesScreen> {
   List<TextEditingController> _rateData = [];
 
   bool _search = false;
+  bool _isSale = false;
   bool _initDone = false;
   bool _isPercentage = false;
   int _ifVat = 1;
@@ -70,6 +70,11 @@ class _SalesScreenState extends State<SalesScreen> {
     }
     return WillPopScope(
       onWillPop: () async {
+        if (_isSale) {
+          SaleskHistory.clearAllSalesHistory().then((value) =>
+              Navigator.of(context)
+                  .pushReplacementNamed(CustomersDataScreen.routeName));
+        }
         SaleskHistory.clearAllSalesHistory();
         return true;
       },
@@ -156,7 +161,7 @@ class _SalesScreenState extends State<SalesScreen> {
             style: ButtonStyle(
               shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20.0),
+                  borderRadius: BorderRadius.circular(7.0),
                 ),
               ),
               backgroundColor: (stocks.isNotEmpty)
@@ -196,9 +201,14 @@ class _SalesScreenState extends State<SalesScreen> {
                     ),
                     const Spacer(),
                     InkWell(
-                      onTap: () => setState(() {
-                        _ifVat = 1;
-                      }),
+                      onTap: () {
+                        setState(() {
+                          _ifVat = 1;
+                        });
+                        total = 0;
+                        tax = 0;
+                        _calculateTotal();
+                      },
                       child: Container(
                         decoration: BoxDecoration(
                             border: Border.all(color: Colors.black),
@@ -222,9 +232,14 @@ class _SalesScreenState extends State<SalesScreen> {
                       ),
                     ),
                     InkWell(
-                      onTap: () => setState(() {
-                        _ifVat = 0;
-                      }),
+                      onTap: () {
+                        setState(() {
+                          _ifVat = 0;
+                        });
+                        total = 0;
+                        tax = 0;
+                        _calculateTotal();
+                      },
                       child: Container(
                         decoration: BoxDecoration(
                             border: Border.all(color: Colors.black),
@@ -252,7 +267,7 @@ class _SalesScreenState extends State<SalesScreen> {
                 CommonWidgets.verticalSpace(1),
                 (_initDone)
                     ? SizedBox(
-                        height: SizeConfig.blockSizeVertical * 55,
+                        height: SizeConfig.blockSizeVertical * 63,
                         child: ListView.separated(
                           itemCount: stocks.length,
                           shrinkWrap: true,
@@ -336,45 +351,110 @@ class _SalesScreenState extends State<SalesScreen> {
                                   ),
                                 ),
                                 CommonWidgets.horizontalSpace(2),
-                                Container(
-                                  width: SizeConfig.blockSizeHorizontal * 17,
-                                  height: SizeConfig.blockSizeVertical * 4,
-                                  decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: AppConfig.buttonDeactiveColor),
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(10))),
-                                  child: TextField(
-                                    controller: _discountData,
-                                    keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                        border: InputBorder.none),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        if (_isPercentage &&
-                                                double.parse((value.isEmpty)
-                                                        ? '0'
-                                                        : value) >
-                                                    100 ||
-                                            !_isPercentage &&
-                                                double.parse((value.isEmpty)
-                                                        ? '0'
-                                                        : value) >
-                                                    roundedTotal) {
-                                          CommonWidgets.showDialogueBox(
-                                              context: context,
-                                              title: 'Error',
-                                              msg: 'Invalid Discount');
-                                        } else {
-                                          total = 0;
-                                          tax = 0;
-                                          discount = double.parse(
-                                              (value.isEmpty) ? '0' : value);
-                                          _calculateTotal();
-                                        }
-                                      });
-                                    },
-                                  ),
+                                InkWell(
+                                  onTap: () {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            title: const Text('Discount'),
+                                            content: TextField(
+                                              onChanged: (value) async {
+                                                setState(() {
+                                                  if (_isPercentage &&
+                                                          double.parse((value
+                                                                      .isEmpty)
+                                                                  ? '0'
+                                                                  : value) >
+                                                              100 ||
+                                                      !_isPercentage &&
+                                                          double.parse((value
+                                                                      .isEmpty)
+                                                                  ? '0'
+                                                                  : value) >
+                                                              roundedTotal) {
+                                                    CommonWidgets.showDialogueBox(
+                                                        context: context,
+                                                        title: 'Error',
+                                                        msg:
+                                                            'Invalid Discount');
+                                                  } else {
+                                                    total = 0;
+                                                    tax = 0;
+                                                    discount = double.parse(
+                                                        (value.isEmpty)
+                                                            ? '0'
+                                                            : value);
+                                                    _calculateTotal();
+                                                  }
+                                                });
+                                              },
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              controller: _discountData,
+                                              decoration: const InputDecoration(
+                                                  hintText: "Discount"),
+                                            ),
+                                            actions: <Widget>[
+                                              MaterialButton(
+                                                color: AppConfig.colorPrimary,
+                                                textColor: Colors.white,
+                                                child: const Text('OK'),
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                              ),
+                                            ],
+                                          );
+                                        });
+                                  },
+                                  child: Container(
+                                      width:
+                                          SizeConfig.blockSizeHorizontal * 17,
+                                      height: SizeConfig.blockSizeVertical * 3,
+                                      decoration: BoxDecoration(
+                                          border: Border.all(
+                                              color: AppConfig
+                                                  .buttonDeactiveColor),
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(5))),
+                                      child: Center(
+                                        child: Text(_discountData.text.isEmpty
+                                            ? ''
+                                            : _discountData.text),
+                                      )
+                                      // TextField(
+                                      //   controller: _discountData,
+                                      //   keyboardType: TextInputType.number,
+                                      //   decoration: const InputDecoration(
+                                      //       border: InputBorder.none),
+                                      //   onChanged: (value) {
+                                      //     setState(() {
+                                      //       if (_isPercentage &&
+                                      //               double.parse((value.isEmpty)
+                                      //                       ? '0'
+                                      //                       : value) >
+                                      //                   100 ||
+                                      //           !_isPercentage &&
+                                      //               double.parse((value.isEmpty)
+                                      //                       ? '0'
+                                      //                       : value) >
+                                      //                   roundedTotal) {
+                                      //         CommonWidgets.showDialogueBox(
+                                      //             context: context,
+                                      //             title: 'Error',
+                                      //             msg: 'Invalid Discount');
+                                      //       } else {
+                                      //         total = 0;
+                                      //         tax = 0;
+                                      //         discount = double.parse(
+                                      //             (value.isEmpty) ? '0' : value);
+                                      //         _calculateTotal();
+                                      //       }
+                                      //     });
+                                      //   },
+                                      // ),
+                                      ),
                                 )
                               ],
                             ),
@@ -384,7 +464,7 @@ class _SalesScreenState extends State<SalesScreen> {
                                   fontSize: AppConfig.textCaption3Size),
                             ),
                             Text(
-                              'Tax : ${(_ifVat == 0) ? '0' : tax}',
+                              'Tax : ${tax.toStringAsFixed(2)}',
                               style: TextStyle(
                                   fontSize: AppConfig.textCaption3Size),
                             ),
@@ -403,7 +483,7 @@ class _SalesScreenState extends State<SalesScreen> {
                           ],
                         ),
                       )
-                    : Container()
+                    : Container(),
               ],
             ),
           ),
@@ -465,7 +545,7 @@ class _SalesScreenState extends State<SalesScreen> {
                 ),
                 CircleAvatar(
                     backgroundColor: Colors.grey.withOpacity(0.2),
-                    radius: 8,
+                    radius: 10,
                     child: GestureDetector(
                       onTap: () async {
                         await SaleskHistory.clearSalesHistory(data['icode'])
@@ -477,7 +557,7 @@ class _SalesScreenState extends State<SalesScreen> {
                       },
                       child: const Icon(
                         Icons.close,
-                        size: 13,
+                        size: 15,
                         color: Colors.red,
                       ),
                     ))
@@ -489,24 +569,17 @@ class _SalesScreenState extends State<SalesScreen> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    Text(
-                      'Type',
-                      style: TextStyle(
-                          color: Color.fromARGB(255, 111, 110, 110),
-                          fontSize: AppConfig.textCaption3Size),
-                    ),
-                    CommonWidgets.horizontalSpace(0.5),
                     Container(
                       constraints: BoxConstraints(
                         minWidth: SizeConfig.blockSizeHorizontal * 11,
                       ),
                       height: SizeConfig.blockSizeVertical * 2.5,
                       // ),
-                      decoration: BoxDecoration(
-                          border:
-                              Border.all(color: AppConfig.buttonDeactiveColor),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(10))),
+                      // decoration: BoxDecoration(
+                      //     border:
+                      //         Border.all(color: AppConfig.buttonDeactiveColor),
+                      //     borderRadius:
+                      //         const BorderRadius.all(Radius.circular(10))),
                       child: DropdownButton(
                         isDense: true,
                         icon: const SizedBox(),
@@ -514,7 +587,8 @@ class _SalesScreenState extends State<SalesScreen> {
                         underline: Container(),
                         value: selectedTypeData[index],
                         style: TextStyle(
-                            color: Colors.black,
+                            color: AppConfig.colorPrimary,
+                            fontWeight: FontWeight.w500,
                             fontSize: AppConfig.textCaption3Size),
                         onChanged: (String? newValue) async {
                           selectedTypeData[index] = newValue!;
@@ -523,11 +597,11 @@ class _SalesScreenState extends State<SalesScreen> {
                             await SaleskHistory.updateSaleItem(
                                 data['icode'], 'selectedType', 'FOC');
                             for (var i in stocks[index]['unitData']) {
-                              for (var k in i['units']) {
-                                if (k['name'] == selectedValue[index]) {
-                                  _rateData[index].text = '0';
-                                }
+                              // for (var k in i['units']) {
+                              if (i['name'] == selectedValue[index]) {
+                                _rateData[index].text = '0';
                               }
+                              // }
                             }
                             tax = 0;
                             total = 0;
@@ -553,24 +627,18 @@ class _SalesScreenState extends State<SalesScreen> {
                       ),
                     ),
                     CommonWidgets.horizontalSpace(1),
-                    Text(
-                      'Unit',
-                      style: TextStyle(
-                          color: Color.fromARGB(255, 111, 110, 110),
-                          fontSize: AppConfig.textCaption3Size),
-                    ),
-                    CommonWidgets.horizontalSpace(0.7),
-                    Container(
-                      constraints: BoxConstraints(
-                        minWidth: SizeConfig.blockSizeHorizontal * 11,
-                      ),
+                    const Text('|'),
+                    CommonWidgets.horizontalSpace(1),
+
+                    // Text(
+                    //   'Unit',
+                    //   style: TextStyle(
+                    //       color: Color.fromARGB(255, 111, 110, 110),
+                    //       fontSize: AppConfig.textCaption3Size),
+                    // ),
+                    // CommonWidgets.horizontalSpace(0.7),
+                    SizedBox(
                       height: SizeConfig.blockSizeVertical * 2.5,
-                      // ),
-                      decoration: BoxDecoration(
-                          border:
-                              Border.all(color: AppConfig.buttonDeactiveColor),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(10))),
                       child: DropdownButton(
                         icon: const SizedBox(),
                         isDense: true,
@@ -578,7 +646,8 @@ class _SalesScreenState extends State<SalesScreen> {
                         underline: Container(),
                         value: selectedValue[index],
                         style: TextStyle(
-                            color: Colors.black,
+                            color: AppConfig.colorPrimary,
+                            fontWeight: FontWeight.w500,
                             fontSize: AppConfig.textCaption3Size),
                         onChanged: (String? newValue) {
                           setState(() {
@@ -586,7 +655,7 @@ class _SalesScreenState extends State<SalesScreen> {
                           });
 
                           for (var i in stocks[index]['unitData']) {
-                            if (i['units'][0]['name'] == newValue) {
+                            if (i['name'] == newValue) {
                               _rateData[index].text = i['price'];
                             }
                           }
@@ -601,79 +670,90 @@ class _SalesScreenState extends State<SalesScreen> {
                         items: menuItems[index],
                       ),
                     ),
-
+                    CommonWidgets.horizontalSpace(1),
+                    const Text('|'),
                     CommonWidgets.horizontalSpace(1),
                     Text(
-                      'Qty',
+                      'Qty :',
                       style: TextStyle(
                           color: const Color.fromARGB(255, 111, 110, 110),
                           fontSize: AppConfig.textCaption3Size),
                     ),
                     CommonWidgets.horizontalSpace(0.5),
                     InkWell(
-                      onTap: () {
-                        showDialog(
-                            barrierDismissible: false,
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                title: const Text('Quantity'),
-                                content: TextField(
-                                  onChanged: (value) async {
-                                    int max = 1;
-                                    for (var i in stocks[index]['unitData']) {
-                                      if (i['units'][0]['name'] ==
-                                          selectedValue[index]) {
-                                        max = i['qty'];
+                        onTap: () {
+                          showDialog(
+                              barrierDismissible: false,
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text('Quantity'),
+                                  content: TextField(
+                                    onChanged: (value) async {
+                                      int max = 1;
+                                      for (var i in stocks[index]['unitData']) {
+                                        if (i['name'] ==
+                                            selectedValue[index]) {
+                                          max = i['stock'];
+                                        }
                                       }
-                                    }
-                                    if (num.parse(value) > max) {
-                                      _qtyData[index].text = '1';
-                                      CommonWidgets.showDialogueBox(
-                                          context: context,
-                                          title: 'Error',
-                                          msg: 'Invalid Quantity');
-                                    } else {
-                                      if (num.parse(value) == 0) {
-                                        await SaleskHistory.updateSaleItem(
-                                            data['icode'], 'quantity', 1);
+                                      if (num.parse(value) > max) {
                                         _qtyData[index].text = '1';
+                                        CommonWidgets.showDialogueBox(
+                                            context: context,
+                                            title: 'Error',
+                                            msg:
+                                                'Please enter smaller quantity.');
                                       } else {
-                                        await SaleskHistory.updateSaleItem(
-                                            data['icode'],
-                                            'quantity',
-                                            int.parse(value));
-                                        _qtyData[index].text = value;
+                                        if (num.parse(value) == 0) {
+                                          await SaleskHistory.updateSaleItem(
+                                              data['icode'], 'quantity', 1);
+                                          _qtyData[index].text = '1';
+                                        } else {
+                                          await SaleskHistory.updateSaleItem(
+                                              data['icode'],
+                                              'quantity',
+                                              int.parse(value));
+                                          _qtyData[index].text = value;
+                                        }
                                       }
-                                    }
-                                  },
-                                  keyboardType: TextInputType.number,
-                                  controller: _qtyData[index],
-                                  decoration: const InputDecoration(
-                                      hintText: "Quantity"),
-                                ),
-                                actions: <Widget>[
-                                  MaterialButton(
-                                    color: AppConfig.colorPrimary,
-                                    textColor: Colors.white,
-                                    child: const Text('OK'),
-                                    onPressed: () {
-                                      if (_qtyData[index].text == '') {
-                                        _qtyData[index].text =
-                                            data['quantity'].toString();
-                                      }
-                                      Navigator.pop(context);
-                                      tax = 0;
-                                      total = 0;
-                                      _calculateTotal();
                                     },
+                                    keyboardType: TextInputType.number,
+                                    controller: _qtyData[index],
+                                    decoration: const InputDecoration(
+                                        hintText: "Quantity"),
                                   ),
-                                ],
-                              );
-                            });
-                      },
-                      child: _dataContainer(data: _qtyData[index].text),
-                    ),
+                                  actions: <Widget>[
+                                    MaterialButton(
+                                      color: AppConfig.colorPrimary,
+                                      textColor: Colors.white,
+                                      child: const Text('OK'),
+                                      onPressed: () {
+                                        if (_qtyData[index].text == '') {
+                                          _qtyData[index].text =
+                                              data['quantity'].toString();
+                                        }
+                                        Navigator.pop(context);
+                                        tax = 0;
+                                        total = 0;
+                                        _calculateTotal();
+                                      },
+                                    ),
+                                  ],
+                                );
+                              });
+                        },
+                        child: SizedBox(
+                          child: Text(
+                            _qtyData[index].text,
+                            style: TextStyle(
+                                color: AppConfig.colorPrimary,
+                                fontWeight: FontWeight.w500,
+                                fontSize: AppConfig.textCaption3Size),
+                          ),
+                        )
+                        // _dataContainer(data:),
+                        ),
                     // Container(
                     //   width: SizeConfig.blockSizeHorizontal * 15,
                     //   height: SizeConfig.blockSizeVertical * 2.5,
@@ -699,9 +779,12 @@ class _SalesScreenState extends State<SalesScreen> {
                     //     },
                     //   ),
                     // ),
+                    // CommonWidgets.horizontalSpace(1),
+                    CommonWidgets.horizontalSpace(1),
+                    const Text('|'),
                     CommonWidgets.horizontalSpace(1),
                     Text(
-                      'Rate',
+                      'Rate :',
                       style: TextStyle(
                           color: const Color.fromARGB(255, 111, 110, 110),
                           fontSize: AppConfig.textCaption3Size),
@@ -743,9 +826,23 @@ class _SalesScreenState extends State<SalesScreen> {
                                   });
                             }
                           : null,
-                      child: _dataContainer(data: _rateData[index].text),
+                      child: Text(
+                        _rateData[index].text,
+                        style: TextStyle(
+                            color: AppConfig.colorPrimary,
+                            fontWeight: FontWeight.w500,
+                            fontSize: AppConfig.textCaption3Size),
+                      ),
                     ),
-                    CommonWidgets.horizontalSpace(2),
+                    CommonWidgets.horizontalSpace(1),
+                    const Text('|'),
+                    CommonWidgets.horizontalSpace(1),
+                    Text(
+                      'Amt :${num.parse(_rateData[index].text) * (num.parse(_qtyData[index].text))}',
+                      style: const TextStyle(
+                        color: Color.fromARGB(255, 111, 110, 110),
+                      ),
+                    )
                   ],
                 ),
               ),
@@ -770,27 +867,33 @@ class _SalesScreenState extends State<SalesScreen> {
     _rateData = List.generate(stocks.length, (_) => TextEditingController());
 
     for (int index = 0; index < stocks.length; index++) {
-      dynamic listData = stocks[index]['unitData'].toSet().toList();
+      List<dynamic> listData = stocks[index]['unitData'];
       for (int i = 0; i < listData.length; i++) {
         menuItems[index].add(DropdownMenuItem(
-            value: (listData[i]['units'][0]['name']).toString(),
-            child: Text((listData[i]['units'][0]['name']).toString())));
+            value: (listData[i]['name']).toString(),
+            child: Text((listData[i]['name']).toString())));
         selectedValue[index] = (stocks[index]['selectedUnit'] != null)
             ? stocks[index]['selectedUnit']
-            : listData[0]['units'][0]['name'].toString();
+            : listData[0]['name'].toString();
         selectedId[index] = {
-          'name': listData[i]['units'][0]['name'].toString(),
-          'id': listData[i]['units'][0]['id'],
+          'name': listData[i]['name'].toString(),
+          'id': listData[i]['id'],
           'price': listData[i]['price'],
           'minPrice': listData[i]['minPrice']
         };
       }
 
+      print('Response ${stocks[index]['unitData']}');
+
       _qtyData[index].text = stocks[index]['quantity'].toString();
       for (var k in stocks[index]['unitData']) {
-        for (int j = 0; j < k['units'].length; j++) {
-          if (k['units'][j]['name'] == selectedValue[index]) {
-            _rateData[index].text = k['price'];
+        for (int j = 0; j < k.length; j++) {
+          if (k['name'] == selectedValue[index]) {
+            _rateData[index].text =
+                (stocks[index]['selectedType'].toString().toLowerCase() ==
+                        "foc")
+                    ? '0'
+                    : k['price'];
           }
         }
       }
@@ -829,11 +932,13 @@ class _SalesScreenState extends State<SalesScreen> {
 
   void _calculateTotal({num? qty}) {
     for (int i = 0; i < stocks.length; i++) {
-      tax = (selectedTypeData[i] == "FOC")
-          ? 0
-          : (tax +
-              (((num.parse(_rateData[i].text) * stocks[i]['tax']) / 100) *
-                  num.parse(_qtyData[i].text)));
+      if (selectedTypeData[i] == "FOC" || _ifVat == 0) {
+        tax = tax;
+      } else {
+        tax = tax +
+            (((num.parse(_rateData[i].text) * stocks[i]['tax']) / 100) *
+                num.parse(_qtyData[i].text));
+      }
       total =
           total + (num.parse(_rateData[i].text) * num.parse(_qtyData[i].text));
     }
@@ -850,7 +955,7 @@ class _SalesScreenState extends State<SalesScreen> {
     }
 
     roundedTotal = customRound(double.parse((grandTotal).toString()));
-    print('Calc $subTotal $discount');
+    print('Calc $grandTotal $tax $discount');
     if (mounted) {
       setState(() {
         _initDone = true;
@@ -883,8 +988,8 @@ class _SalesScreenState extends State<SalesScreen> {
 
     for (int i = 0; i < stocks.length; i++) {
       for (var j in stocks[i]['unitData']) {
-        if (j['units'][0]['name'] == selectedValue[i]) {
-          units = j['units'][0]['id'];
+        if (j['name'] == selectedValue[i]) {
+          units = j['id'];
         }
         for (int k = 0; k < typeDetails.data!.length; k++) {
           if (typeDetails.data![k].name == selectedTypeData[i]) {
@@ -895,28 +1000,34 @@ class _SalesScreenState extends State<SalesScreen> {
 
       //stocks
       bodyJson["item_id"].add(stocks[i]["itemId"]);
-      bodyJson["quantity"].add(stocks[i]["quantity"]);
-      bodyJson["mrp"].add(stocks[i]["mrp"]);
+      bodyJson["quantity"].add(_qtyData[i].text);
+      bodyJson["mrp"].add(_rateData[i].text);
       bodyJson["unit"].add(units);
       bodyJson['product_type'].add(type!);
     }
 
     print('BodyJson $bodyJson');
-    // dynamic resJson = await api.sendData(
-    //     '/api/vansale.store', AppState().token, jsonEncode(bodyJson));
-    // debugPrint('Body Data $bodyJson');
-    // setState(() {
-    //   _initDone = true;
-    // });
-    // if (resJson['data'] != null) {
-    //   if (mounted) {
-    //     CommonWidgets.showDialogueBox(
-    //             context: context, title: "Alert", msg: "Added Successfully")
-    //         .then((value) => SaleskHistory.clearAllSalesHistory().then(
-    //             (value) => Navigator.of(context)
-    //                 .pushNamed(CustomersDataScreen.routeName)));
-    //   }
-    // }
+    dynamic resJson = await api.sendData(
+        '/api/vansale.store', AppState().token, jsonEncode(bodyJson));
+    debugPrint('Body Data $bodyJson');
+    setState(() {
+      _initDone = true;
+    });
+    if (resJson['data'] != null) {
+      _isSale = true;
+      if (mounted) {
+        CommonWidgets.showDialogueBox(
+                context: context,
+                title: "Alert",
+                msg: "${resJson['data']['invoice_no']} Created Successfully")
+            .then(
+          (value) => SaleskHistory.clearAllSalesHistory().then(
+            (value) => Navigator.of(context)
+                .pushReplacementNamed(CustomersDataScreen.routeName),
+          ),
+        );
+      }
+    }
   }
 
   _getTypes() async {

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobizapp/Components/commonwidgets.dart';
+import 'package:mobizapp/Pages/customerregistration.dart';
+import 'package:mobizapp/Pages/paymentcollection.dart';
 import 'package:mobizapp/Pages/saleinvoices.dart';
 import 'package:mobizapp/Pages/salesscreen.dart';
 import 'package:mobizapp/confg/appconfig.dart';
@@ -212,8 +214,22 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
               ),
               CommonWidgets.verticalSpace(2),
               Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                _iconButtons(icon: Icons.person_add, title: 'Edit'),
-                _iconButtons(icon: Icons.settings_suggest, title: 'SQA'),
+                InkWell(
+                    onTap: () {
+                      Navigator.pushNamed(
+                          context, CustomerRegistration.routeName,
+                          arguments: {
+                            'name': name,
+                            'address': address,
+                            'phone': phone,
+                            'email': email,
+                            'payment_terms': customerType,
+                            'credit_days': creditDays,
+                            'credit_limit': creditLimit
+                          });
+                    },
+                    child: _iconButtons(icon: Icons.person_add, title: 'Edit')),
+                _iconButtons(icon: Icons.settings_suggest, title: 'SOA'),
                 _iconButtons(icon: Icons.shopping_bag, title: 'Order')
               ]),
               CommonWidgets.verticalSpace(2),
@@ -226,7 +242,14 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                     child: _iconButtons(
                         icon: Icons.point_of_sale, title: 'Sales')),
                 _iconButtons(icon: Icons.inventory, title: 'Return'),
-                _iconButtons(icon: Icons.payments, title: 'Payment Collection')
+                InkWell(
+                    onTap: () {
+                      Navigator.pushNamed(
+                          context, PaymentCollectionScreen.routeName,
+                          arguments: {'customer': id});
+                    },
+                    child: _iconButtons(
+                        icon: Icons.payments, title: 'Payment Collection'))
               ]),
               CommonWidgets.verticalSpace(2),
               Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
@@ -235,13 +258,6 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                 _iconButtons(icon: Icons.bar_chart, title: 'NVR'),
                 _iconButtons(icon: Icons.pie_chart, title: 'Total Sales')
               ]),
-              CommonWidgets.verticalSpace(2),
-              InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(context, SaleInvoiceScrreen.routeName);
-                  },
-                  child: _iconButtons(
-                      icon: Icons.data_exploration, title: 'Invoice'))
             ],
           ),
         ),

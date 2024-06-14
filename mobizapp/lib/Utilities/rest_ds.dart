@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 
+import '../Components/commonwidgets.dart';
 import '../Models/appstate.dart';
 import 'network_util.dart';
 
@@ -38,9 +41,6 @@ class RestDatasource {
     buildNumber = packageInfo.buildNumber;
     appVersion = packageInfo.version;
 
-    print("Build Number $buildNumber");
-    print("Os type $osType");
-    print("Time Zone $timeZone");
     header = {
       //'${HttpHeaders.authorizationHeader}': "",
       'Content-Type': 'application/json; charset=UTF-8',
@@ -49,15 +49,11 @@ class RestDatasource {
       'Build_Number': buildNumber,
       'Time_zone': timeZone,
     };
-    print("Header map in function $header");
 
     return header;
   }
 
   Future<dynamic> getDetails(String url, String? token) async {
-    // var header = await getHeader();
-    // header['${HttpHeaders.authorizationHeader}'] = "token $token";
-    // print("Header in getDetails $header");
     var header;
     var extradetails = await getHeader();
     if (token == null) {
@@ -156,5 +152,87 @@ class RestDatasource {
           msg: "No Internet Connection", backgroundColor: Colors.black);
     }
     return {};
+  }
+
+  Future<Response> customerRegister(String? token, dynamic bodyJson,
+      [File? imageFile, BuildContext? context, bool? isUpdate = false]) async {
+    List<MapEntry<String, MultipartFile>> uploadList = [];
+    var extradetails = await getHeader();
+
+    String url = (isUpdate!) ? "/api/customer.edit" : "/api/customer.post";
+
+    final SIGNUP__URL = BASE_URL +
+        url +
+        "?timeZone=${extradetails["Time_zone"]}&appVersion=${extradetails["App_Version"]}";
+    FormData data;
+    data = FormData.fromMap({
+      'name': bodyJson['name'],
+      'code': bodyJson['code'],
+      'address': bodyJson['address'],
+      'contact_number': bodyJson['contact_number'],
+      'whatsapp_number': bodyJson['whatsapp_number'],
+      'email': bodyJson['email'],
+      'trn': bodyJson['trn'],
+      'route_id': bodyJson['route_id'],
+      'province_id': bodyJson['provience_id'],
+      'store_id': bodyJson['store_id'],
+      'payment_terms': bodyJson['payment_terms'],
+      if (bodyJson['credi_limit'] != null && bodyJson['credi_limit'] != "")
+        'credi_limit': bodyJson['credi_limit'],
+      if (bodyJson['credi_days'] != null && bodyJson['credi_days'] != "")
+        'credi_days': bodyJson['credi_days'],
+    });
+
+    if (imageFile != null) {
+      String fileName = imageFile.path.split('/').last;
+      print("Before dio ${imageFile.path} , $fileName");
+      uploadList.add(MapEntry(
+          "cust_image",
+          await MultipartFile.fromFile(
+            imageFile.path,
+            filename: fileName,
+            contentType: MediaType("image", "jpg"),
+          )));
+      data.files.addAll(uploadList);
+    }
+    Dio dio = new Dio();
+    //dio.options.headers['content-Type'] = 'application/json';
+    //dio.options.headers["authorization"] = null;
+    print(data.fields);
+    print("data  :  $data");
+    print("data.file  : ${data.files}");
+    dio.interceptors.add(InterceptorsWrapper(
+      onError: (DioException e, handler) {
+        if (e.response?.statusCode == 413) {
+          // Handle large sized data
+
+          if (context != null) {
+            CommonWidgets.showDialogueBox(
+              context: context,
+              msg:
+                  "Please decrease the profile image size, as our limit allows a maximum of 10MB per document.",
+              title: 'Alert',
+            );
+          }
+        } else {
+          if (e.response?.statusCode! == 500 ||
+              e.response?.statusCode! == 502) {
+            print('server responded with an error');
+          }
+        }
+        return handler.next(e);
+      },
+    ));
+
+    try {
+      print('dio 1');
+      Response response;
+      response = await dio.post(SIGNUP__URL, data: data);
+      print(response);
+      return response;
+    } catch (e) {
+      print('Error: $e');
+      throw e;
+    }
   }
 }

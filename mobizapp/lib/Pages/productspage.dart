@@ -162,7 +162,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(15.0),
                   child: FadeInImage(
-                    image:  NetworkImage(
+                    image: NetworkImage(
                         'https://mobiz-shop.yes45.in/uploads/product/${data.proImage}'),
                     placeholder: const AssetImage('Assets/Images/no_image.jpg'),
                     imageErrorBuilder: (context, error, stackTrace) {
@@ -182,16 +182,10 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     child: SizedBox(
                       width: SizeConfig.blockSizeHorizontal * 70,
                       child: Text(
-                        data.name!,
-                        style: TextStyle(fontSize: AppConfig.paragraphSize),
+                        '${data.code} | ${data.name!}',
+                        style: TextStyle(fontSize: AppConfig.textCaption2Size),
                       ),
                     ),
-                  ),
-                  Text(
-                    data.code.toString(),
-                    style: TextStyle(
-                        fontSize: AppConfig.textCaption3Size,
-                        fontWeight: AppConfig.headLineWeight),
                   ),
                   Row(
                     children: [
@@ -228,6 +222,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
     if (resJson['data'] != null) {
       products = ProductDataModel.fromJson(resJson);
+
       for (int i = 0; i < products.data!.length; i++) {
         _getQuantity(i, products.data![i].id!);
       }
@@ -242,7 +237,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
   Future<void> _getQuantity(int i, int id) async {
     RestDatasource api = RestDatasource();
     dynamic resJson = await api.getDetails(
-        '/api/get_van_stock_detail?product_id=$id',
+        '/api/get_van_stock_detail?product_id=$id&van_id=${AppState().vanId}',
         AppState().token); //${AppState().storeId}
 
     if (resJson['status'] == "success") {

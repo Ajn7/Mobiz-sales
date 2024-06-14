@@ -1,23 +1,18 @@
-class VanSaleProducts {
-  List<Data>? data;
+class InvoiceData {
+  Data? data;
   bool? success;
 
-  VanSaleProducts({this.data, this.success});
+  InvoiceData({this.data, this.success});
 
-  VanSaleProducts.fromJson(Map<String, dynamic> json) {
-    if (json['data'] != null) {
-      data = <Data>[];
-      json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
-      });
-    }
+  InvoiceData.fromJson(Map<String, dynamic> json) {
+    data = json['data'] != null ? new Data.fromJson(json['data']) : null;
     success = json['success'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     if (this.data != null) {
-      data['data'] = this.data!.map((v) => v.toJson()).toList();
+      data['data'] = this.data!.toJson();
     }
     data['success'] = this.success;
     return data;
@@ -31,26 +26,29 @@ class Data {
   String? inDate;
   String? inTime;
   String? invoiceNo;
-  String? deliveryNo;
+  dynamic deliveryNo;
   num? otherCharge;
   num? discount;
   String? roundOff;
   num? total;
   num? totalTax;
   num? grandTotal;
-  num? receipt;
+  int? receipt;
   num? balance;
-  num? orderType;
-  num? ifVat;
-  num? vanId;
-  num? userId;
-  num? storeId;
+  int? orderType;
+  int? ifVat;
+  int? vanId;
+  int? userId;
+  int? storeId;
   int? status;
   String? createdAt;
   String? updatedAt;
   String? deletedAt;
+  List<Store>? store;
   List<Detail>? detail;
   List<Customer>? customer;
+  List<Van>? van;
+  List<User>? user;
 
   Data(
       {this.id,
@@ -77,8 +75,11 @@ class Data {
       this.createdAt,
       this.updatedAt,
       this.deletedAt,
+      this.store,
       this.detail,
-      this.customer});
+      this.customer,
+      this.van,
+      this.user});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -105,6 +106,12 @@ class Data {
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
     deletedAt = json['deleted_at'];
+    if (json['store'] != null) {
+      store = <Store>[];
+      json['store'].forEach((v) {
+        store!.add(new Store.fromJson(v));
+      });
+    }
     if (json['detail'] != null) {
       detail = <Detail>[];
       json['detail'].forEach((v) {
@@ -115,6 +122,18 @@ class Data {
       customer = <Customer>[];
       json['customer'].forEach((v) {
         customer!.add(new Customer.fromJson(v));
+      });
+    }
+    if (json['van'] != null) {
+      van = <Van>[];
+      json['van'].forEach((v) {
+        van!.add(new Van.fromJson(v));
+      });
+    }
+    if (json['user'] != null) {
+      user = <User>[];
+      json['user'].forEach((v) {
+        user!.add(new User.fromJson(v));
       });
     }
   }
@@ -145,12 +164,130 @@ class Data {
     data['created_at'] = this.createdAt;
     data['updated_at'] = this.updatedAt;
     data['deleted_at'] = this.deletedAt;
+    if (this.store != null) {
+      data['store'] = this.store!.map((v) => v.toJson()).toList();
+    }
     if (this.detail != null) {
       data['detail'] = this.detail!.map((v) => v.toJson()).toList();
     }
     if (this.customer != null) {
       data['customer'] = this.customer!.map((v) => v.toJson()).toList();
     }
+    if (this.van != null) {
+      data['van'] = this.van!.map((v) => v.toJson()).toList();
+    }
+    if (this.user != null) {
+      data['user'] = this.user!.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+}
+
+class Store {
+  int? id;
+  String? code;
+  String? name;
+  int? comapnyId;
+  String? logo;
+  String? address;
+  String? emirate;
+  String? country;
+  String? contactNumber;
+  String? whatsappNumber;
+  String? email;
+  String? username;
+  String? password;
+  int? noOfUsers;
+  String? suscriptionEndDate;
+  dynamic bufferDays;
+  String? description;
+  String? currency;
+  num? vatPercentage;
+  String? trn;
+  int? status;
+  String? createdAt;
+  String? updatedAt;
+  String? deletedAt;
+
+  Store(
+      {this.id,
+      this.code,
+      this.name,
+      this.comapnyId,
+      this.logo,
+      this.address,
+      this.emirate,
+      this.country,
+      this.contactNumber,
+      this.whatsappNumber,
+      this.email,
+      this.username,
+      this.password,
+      this.noOfUsers,
+      this.suscriptionEndDate,
+      this.bufferDays,
+      this.description,
+      this.currency,
+      this.vatPercentage,
+      this.trn,
+      this.status,
+      this.createdAt,
+      this.updatedAt,
+      this.deletedAt});
+
+  Store.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    code = json['code'];
+    name = json['name'];
+    comapnyId = json['comapny_id'];
+    logo = json['logo'];
+    address = json['address'];
+    emirate = json['emirate'];
+    country = json['country'];
+    contactNumber = json['contact_number'];
+    whatsappNumber = json['whatsapp_number'];
+    email = json['email'];
+    username = json['username'];
+    password = json['password'];
+    noOfUsers = json['no_of_users'];
+    suscriptionEndDate = json['suscription_end_date'];
+    bufferDays = json['buffer_days'];
+    description = json['description'];
+    currency = json['currency'];
+    vatPercentage = json['vat_percentage'];
+    trn = json['trn'];
+    status = json['status'];
+    createdAt = json['created_at'];
+    updatedAt = json['updated_at'];
+    deletedAt = json['deleted_at'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['code'] = this.code;
+    data['name'] = this.name;
+    data['comapny_id'] = this.comapnyId;
+    data['logo'] = this.logo;
+    data['address'] = this.address;
+    data['emirate'] = this.emirate;
+    data['country'] = this.country;
+    data['contact_number'] = this.contactNumber;
+    data['whatsapp_number'] = this.whatsappNumber;
+    data['email'] = this.email;
+    data['username'] = this.username;
+    data['password'] = this.password;
+    data['no_of_users'] = this.noOfUsers;
+    data['suscription_end_date'] = this.suscriptionEndDate;
+    data['buffer_days'] = this.bufferDays;
+    data['description'] = this.description;
+    data['currency'] = this.currency;
+    data['vat_percentage'] = this.vatPercentage;
+    data['trn'] = this.trn;
+    data['status'] = this.status;
+    data['created_at'] = this.createdAt;
+    data['updated_at'] = this.updatedAt;
+    data['deleted_at'] = this.deletedAt;
     return data;
   }
 }
@@ -187,26 +324,26 @@ class Detail {
   num? taxPercentage;
   num? taxInclusive;
   num? price;
-  int? baseUnitId;
-  int? baseUnitQty;
+  num? baseUnitId;
+  num? baseUnitQty;
   String? baseUnitDiscount;
-  String? baseUnitBarcode;
-  num? baseUnitOpStock;
+  dynamic baseUnitBarcode;
+  int? baseUnitOpStock;
   String? secondUnitPrice;
-  int? secondUnitId;
-  int? secondUnitQty;
+  num? secondUnitId;
+  num? secondUnitQty;
   String? secondUnitDiscount;
-  String? secondUnitBarcode;
+  dynamic secondUnitBarcode;
   String? secondUnitOpStock;
   String? thirdUnitPrice;
   int? thirdUnitId;
-  int? thirdUnitQty;
+  num? thirdUnitQty;
   String? thirdUnitDiscount;
   String? thirdUnitBarcode;
   String? thirdUnitOpStock;
   String? fourthUnitPrice;
   int? fourthUnitId;
-  int? fourthUnitQty;
+  num? fourthUnitQty;
   String? fourthUnitDiscount;
   int? isMultipleUnit;
   String? fourthUnitOpStock;
@@ -400,7 +537,7 @@ class Customer {
   int? id;
   String? name;
   String? code;
-  dynamic address;
+  String? address;
   String? contactNumber;
   String? whatsappNumber;
   String? email;
@@ -416,7 +553,7 @@ class Customer {
   String? createdAt;
   String? updatedAt;
   String? deletedAt;
-  Null? erpCustomerCode;
+  String? erpCustomerCode;
 
   Customer(
       {this.id,
@@ -485,6 +622,120 @@ class Customer {
     data['updated_at'] = this.updatedAt;
     data['deleted_at'] = this.deletedAt;
     data['erp_customer_code'] = this.erpCustomerCode;
+    return data;
+  }
+}
+
+class Van {
+  int? id;
+  Null? code;
+  String? name;
+  Null? description;
+  int? status;
+  int? storeId;
+  String? createdAt;
+  String? updatedAt;
+  Null? deletedAt;
+
+  Van(
+      {this.id,
+      this.code,
+      this.name,
+      this.description,
+      this.status,
+      this.storeId,
+      this.createdAt,
+      this.updatedAt,
+      this.deletedAt});
+
+  Van.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    code = json['code'];
+    name = json['name'];
+    description = json['description'];
+    status = json['status'];
+    storeId = json['store_id'];
+    createdAt = json['created_at'];
+    updatedAt = json['updated_at'];
+    deletedAt = json['deleted_at'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['code'] = this.code;
+    data['name'] = this.name;
+    data['description'] = this.description;
+    data['status'] = this.status;
+    data['store_id'] = this.storeId;
+    data['created_at'] = this.createdAt;
+    data['updated_at'] = this.updatedAt;
+    data['deleted_at'] = this.deletedAt;
+    return data;
+  }
+}
+
+class User {
+  int? id;
+  String? name;
+  String? email;
+  String? emailVerifiedAt;
+  dynamic isSuperAdmin;
+  dynamic isShopAdmin;
+  String? isStaff;
+  int? departmentId;
+  int? designationId;
+  int? storeId;
+  int? rolId;
+  String? createdAt;
+  String? updatedAt;
+
+  User(
+      {this.id,
+      this.name,
+      this.email,
+      this.emailVerifiedAt,
+      this.isSuperAdmin,
+      this.isShopAdmin,
+      this.isStaff,
+      this.departmentId,
+      this.designationId,
+      this.storeId,
+      this.rolId,
+      this.createdAt,
+      this.updatedAt});
+
+  User.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    name = json['name'];
+    email = json['email'];
+    emailVerifiedAt = json['email_verified_at'];
+    isSuperAdmin = json['is_super_admin'];
+    isShopAdmin = json['is_shop_admin'];
+    isStaff = json['is_staff'];
+    departmentId = json['department_id'];
+    designationId = json['designation_id'];
+    storeId = json['store_id'];
+    rolId = json['rol_id'];
+    createdAt = json['created_at'];
+    updatedAt = json['updated_at'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['name'] = this.name;
+    data['email'] = this.email;
+    data['email_verified_at'] = this.emailVerifiedAt;
+    data['is_super_admin'] = this.isSuperAdmin;
+    data['is_shop_admin'] = this.isShopAdmin;
+    data['is_staff'] = this.isStaff;
+    data['department_id'] = this.departmentId;
+    data['designation_id'] = this.designationId;
+    data['store_id'] = this.storeId;
+    data['rol_id'] = this.rolId;
+    data['created_at'] = this.createdAt;
+    data['updated_at'] = this.updatedAt;
     return data;
   }
 }

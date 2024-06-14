@@ -200,8 +200,8 @@ class _VanStockScreenState extends State<VanStockScreen> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(15.0),
                   child: FadeInImage(
-                    image: const NetworkImage(
-                        'https://www.vecteezy.com/vector-art/5337799-icon-image-not-found-vector'),
+                    image:  NetworkImage(
+                        'https://mobiz-shop.yes45.in/uploads/product/${data.proImage}'),
                     placeholder: const AssetImage('Assets/Images/no_image.jpg'),
                     imageErrorBuilder: (context, error, stackTrace) {
                       return Image.asset('Assets/Images/no_image.jpg',
@@ -218,27 +218,23 @@ class _VanStockScreenState extends State<VanStockScreen> {
                   Tooltip(
                     message: (data.name ?? '').toUpperCase(),
                     child: SizedBox(
-                      width: SizeConfig.blockSizeHorizontal*70,
+                      width: SizeConfig.blockSizeHorizontal * 70,
                       child: Text(
-                        (data.name?? '').toUpperCase(),
+                        '${data.code} | ${(data.name ?? '').toUpperCase()}',
                         style: TextStyle(
-                            fontSize: AppConfig.paragraphSize,
-                            fontWeight: AppConfig.headLineWeight),
+                          fontSize: AppConfig.textCaption2Size,
+                        ),
                       ),
                     ),
                   ),
-                  Text(
-                    data.code.toString(),
-                    style: TextStyle(fontSize: AppConfig.textCaption3Size),
-                  ),
                   Row(
                     children: [
-                      for (int i = 0; i < data.productDetail!.length; i++)
+                      for (int i = data.productDetail!.length - 1; i >= 0; i--)
                         Text(
                           '${data.productDetail![i].name}:${data.productDetail![i].stock} ', //${formatDivisionResult(products.result!.data![0].quandity!, qunatityData.result!.data![i].qty!, '')} ',
                           style: TextStyle(
-                              fontSize: AppConfig.textCaption3Size,
-                              fontWeight: AppConfig.headLineWeight),
+                            fontSize: AppConfig.textCaption3Size,
+                          ),
                         ),
                     ],
                   )

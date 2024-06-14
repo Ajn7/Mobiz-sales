@@ -202,7 +202,8 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
                             ),
                           ),
                         ),
-                        CommonWidgets.horizontalSpace(12),
+                        // CommonWidgets.horizontalSpace(12),
+                        Spacer(),
                         Text(
                           (data.status == 1)
                               ? 'Pending'
@@ -250,20 +251,13 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
                               mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  data.detail![i].itemId.toString(),
-                                  style: TextStyle(
-                                      fontSize: AppConfig.textCaption3Size,
-                                      fontWeight: AppConfig.headLineWeight),
-                                ),
                                 Tooltip(
                                   message: (data.detail![i].productName ?? '')
                                       .toUpperCase(),
                                   child: SizedBox(
                                     width: SizeConfig.blockSizeHorizontal * 80,
                                     child: Text(
-                                      (data.detail![i].productName ?? '')
-                                          .toUpperCase(),
+                                      '${data.detail![i].productCode ?? ''} | ${(data.detail![i].productName ?? '').toUpperCase()}',
                                       style: TextStyle(
                                           fontSize: AppConfig.textCaption3Size,
                                           fontWeight: AppConfig.headLineWeight),
@@ -271,11 +265,22 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
                                   ),
                                 ),
                                 CommonWidgets.verticalSpace(1),
-                                Text(
-                                  '${data.detail![i].unit} : ${data.detail![i].approvedQuantity}',
-                                  style: TextStyle(
-                                      fontSize: AppConfig.textCaption3Size,
-                                      fontWeight: AppConfig.headLineWeight),
+                                Row(
+                                  children: [
+                                    Text(
+                                      '${data.detail![i].unit} : ${data.detail![i].approvedQuantity}',
+                                      style: TextStyle(
+                                          fontSize: AppConfig.textCaption3Size,
+                                          fontWeight: AppConfig.headLineWeight),
+                                    ),
+                                    CommonWidgets.horizontalSpace(2),
+                                    Text(
+                                      'Requested Qty: ${data.detail![i].quantity}',
+                                      style: TextStyle(
+                                          fontSize: AppConfig.textCaption3Size,
+                                          fontWeight: AppConfig.headLineWeight),
+                                    ),
+                                  ],
                                 ),
                                 Divider(
                                   color: AppConfig.textBlack.withOpacity(0.7),
@@ -357,20 +362,13 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
                               mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  data.detail![i].itemId.toString(),
-                                  style: TextStyle(
-                                      fontSize: AppConfig.textCaption3Size,
-                                      fontWeight: AppConfig.headLineWeight),
-                                ),
                                 Tooltip(
                                   message: (data.detail![i].productName ?? '')
                                       .toUpperCase(),
                                   child: SizedBox(
                                     width: SizeConfig.blockSizeHorizontal * 80,
                                     child: Text(
-                                      (data.detail![i].productName ?? '')
-                                          .toUpperCase(),
+                                      '${data.detail![i].productCode ?? ''} | ${(data.detail![i].productName ?? '').toUpperCase()}',
                                       style: TextStyle(
                                           fontSize: AppConfig.textCaption3Size,
                                           fontWeight: AppConfig.headLineWeight),
@@ -378,13 +376,28 @@ class _VanStockRequestsScreenState extends State<VanStockRequestsScreen> {
                                   ),
                                 ),
                                 CommonWidgets.verticalSpace(1),
-                                Text(
-                                  (data.status == 3)
-                                      ? '${data.detail![i].unit}: ${data.detail![i].approvedQuantity}'
-                                      : '${data.detail![i].unit}: ${data.detail![i].quantity}',
-                                  style: TextStyle(
-                                      fontSize: AppConfig.textCaption3Size,
-                                      fontWeight: AppConfig.headLineWeight),
+                                Row(
+                                  children: [
+                                    Text(
+                                      (data.status == 3)
+                                          ? '${data.detail![i].unit}: ${data.detail![i].approvedQuantity}'
+                                          : '${data.detail![i].unit}: ${data.detail![i].quantity}',
+                                      style: TextStyle(
+                                          fontSize: AppConfig.textCaption3Size,
+                                          fontWeight: AppConfig.headLineWeight),
+                                    ),
+                                    CommonWidgets.horizontalSpace(2),
+                                    (data.status == 3)
+                                        ? Text(
+                                            'Requested Qty: ${data.detail![i].quantity}',
+                                            style: TextStyle(
+                                                fontSize:
+                                                    AppConfig.textCaption3Size,
+                                                fontWeight:
+                                                    AppConfig.headLineWeight),
+                                          )
+                                        : const SizedBox(),
+                                  ],
                                 ),
                                 (i == data.detail!.length - 1)
                                     ? Container()

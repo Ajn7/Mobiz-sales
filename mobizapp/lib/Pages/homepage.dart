@@ -5,6 +5,7 @@ import 'package:mobizapp/Components/commonwidgets.dart';
 import 'package:mobizapp/Pages/customerscreen.dart';
 import 'package:mobizapp/Pages/loginpage.dart';
 import 'package:mobizapp/Pages/productspage.dart';
+import 'package:mobizapp/Pages/receiptscreen.dart';
 import 'package:mobizapp/Pages/selectProducts.dart';
 import 'package:mobizapp/Pages/newvanstockrequests.dart';
 import 'package:mobizapp/Pages/vanstockdata.dart';
@@ -16,6 +17,7 @@ import 'package:mobizapp/confg/sizeconfig.dart';
 
 import '../Models/appstate.dart';
 import '../Models/userDetails.dart';
+import 'saleinvoices.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = "/HomeScreen";
@@ -26,6 +28,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool _restrict = false;
   @override
   void initState() {
     _getUserDetails();
@@ -38,8 +41,10 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(40.0),
         child: AppBar(
+          centerTitle: false,
           iconTheme: const IconThemeData(color: AppConfig.backgroundColor),
           backgroundColor: AppConfig.colorPrimary,
+          titleSpacing: 0,
           title: RichText(
             text: TextSpan(
               text: 'Hello ',
@@ -51,15 +56,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   text: '${AppState().name}',
                   style: TextStyle(
                       color: AppConfig.backgroundColor,
-                      fontSize: AppConfig.textSubtitle2Size),
+                      fontSize: AppConfig.textSubtitle3Size),
                 ),
               ],
             ),
           ),
-          //  Text(
-          //   'Hello ${AppState().name}',
-          //   style: const TextStyle(color: AppConfig.backgroundColor),
-          // ),
         ),
       ),
       drawer: SizedBox(
@@ -105,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
                 const Divider(),
-                const Text('v0.0.5'),
+                const Text('v0.0.11'),
               ],
             ),
           ),
@@ -124,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Image.asset(
-                            'Assets/Images/logo.png',
+                            'Assets/Images/logo.jpg',
                             fit: BoxFit.contain,
                             width: SizeConfig.blockSizeHorizontal * 20,
                             height: SizeConfig.blockSizeVertical * 10,
@@ -137,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            if (AppState().vanId == null) {
+                            if (_restrict) {
                               CommonWidgets.showDialogueBox(
                                   context: context,
                                   title: "Alert",
@@ -152,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         GestureDetector(
                             onTap: () {
-                              if (AppState().vanId == null) {
+                              if (_restrict) {
                                 CommonWidgets.showDialogueBox(
                                     context: context,
                                     title: "Alert",
@@ -166,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 icon: Icons.people, title: 'Customer')),
                         GestureDetector(
                           onTap: () {
-                            if (AppState().vanId == null) {
+                            if (_restrict) {
                               CommonWidgets.showDialogueBox(
                                   context: context,
                                   title: "Alert",
@@ -184,17 +185,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _iconButtons(icon: Icons.attach_money, title: 'Expense'),
+                      _iconButtons(icon: Icons.menu_book, title: 'Expense'),
                       _iconButtons(icon: Icons.local_mall, title: 'Order'),
-                      _iconButtons(
-                          icon: Icons.document_scanner, title: 'Invoice')
+                      InkWell(
+                        onTap: () => Navigator.pushNamed(
+                            context, SaleInvoiceScrreen.routeName),
+                        child: _iconButtons(
+                            icon: Icons.document_scanner, title: 'Invoice'),
+                      )
                     ],
                   ),
                   CommonWidgets.verticalSpace(3),
                   Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _iconButtons(icon: Icons.receipt, title: 'Receipt'),
+                        InkWell(
+                          onTap: () => Navigator.pushNamed(
+                              context, ReceiptScreen.receiptScreen),
+                          child: _iconButtons(
+                              icon: Icons.receipt, title: 'Receipt'),
+                        ),
                         _iconButtons(icon: Icons.inventory, title: 'Return'),
                         _iconButtons(
                             icon: Icons.calendar_today, title: 'Schedule'),
@@ -206,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       _iconButtons(icon: Icons.groups, title: 'Attendence'),
                       GestureDetector(
                         onTap: () {
-                          if (AppState().vanId == null) {
+                          if (_restrict) {
                             CommonWidgets.showDialogueBox(
                                 context: context,
                                 title: "Alert",
@@ -418,8 +428,10 @@ class _HomeScreenState extends State<HomeScreen> {
     if (resJson['data'] != null) {
       userData = UserDetailsModel.fromJson(resJson);
       AppState().vanId = userData.data![0].vanId;
+      AppState().routeId = userData.data![0].routeId;
     } else {
       if (mounted) {
+        _restrict = true;
         CommonWidgets.showDialogueBox(
             context: context,
             title: "Alert",

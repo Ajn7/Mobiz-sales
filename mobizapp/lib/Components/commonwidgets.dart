@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mobizapp/confg/appconfig.dart';
 import 'package:mobizapp/confg/sizeconfig.dart';
 
-
-
 class CommonWidgets {
   CommonWidgets._();
 
@@ -101,7 +99,7 @@ class CommonWidgets {
         onPressed: function,
         child: Text(
           title,
-          style: TextStyle(color: textColor,fontSize: AppConfig.headLineSize),
+          style: TextStyle(color: textColor, fontSize: AppConfig.headLineSize),
         ),
       ),
     );
@@ -147,6 +145,12 @@ class CommonWidgets {
       ),
       height: height,
       width: width,
+    );
+  }
+
+  static Widget loadingWidget() {
+    return const Center(
+      child: CircularProgressIndicator.adaptive(),
     );
   }
 }

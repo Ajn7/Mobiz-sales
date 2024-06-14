@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mobizapp/Pages/customerdetailscreen.dart';
+import 'package:mobizapp/Pages/customerregistration.dart';
 import 'package:mobizapp/Pages/customerscreen.dart';
 import 'package:mobizapp/Pages/homepage.dart';
 import 'package:mobizapp/Pages/loginpage.dart';
+import 'package:mobizapp/Pages/paymentcollection.dart';
 import 'package:mobizapp/Pages/productspage.dart';
+import 'package:mobizapp/Pages/receiptscreen.dart';
 import 'package:mobizapp/Pages/salesscreen.dart';
 import 'package:mobizapp/Pages/selectProducts.dart';
 import 'package:mobizapp/Pages/splashscreen.dart';
@@ -33,21 +36,29 @@ class MyApp extends StatelessWidget {
         initialRoute: SplashScreen.routeName,
         routes: {
           // '/': (context) => Home(),
-          LoginScreen.routeName: (context) => LoginScreen(),
-          HomeScreen.routeName: (context) => HomeScreen(),
-          ProductsScreen.routeName: (context) => ProductsScreen(),
+          LoginScreen.routeName: (context) => const LoginScreen(),
+          HomeScreen.routeName: (context) => const HomeScreen(),
+          ProductsScreen.routeName: (context) => const ProductsScreen(),
           VanStockRequestsScreen.routeName: (context) =>
-              VanStockRequestsScreen(),
-          VanStocks.routeName: (context) => VanStocks(),
-          SplashScreen.routeName: (context) => SplashScreen(),
-          SelectProductsScreen.routeName: (context) => SelectProductsScreen(),
-          CustomersDataScreen.routeName: (context) => CustomersDataScreen(),
-          SalesScreen.routeName: (context) => SalesScreen(),
-          VanStockScreen.routeName: (context) => VanStockScreen(),
-          CustomerDetailsScreen.routeName: (context) => const CustomerDetailsScreen(),
+              const VanStockRequestsScreen(),
+          VanStocks.routeName: (context) => const VanStocks(),
+          SplashScreen.routeName: (context) => const SplashScreen(),
+          SelectProductsScreen.routeName: (context) =>
+              const SelectProductsScreen(),
+          CustomersDataScreen.routeName: (context) =>
+              const CustomersDataScreen(),
+          SalesScreen.routeName: (context) => const SalesScreen(),
+          VanStockScreen.routeName: (context) => const VanStockScreen(),
+          CustomerDetailsScreen.routeName: (context) =>
+              const CustomerDetailsScreen(),
           SalesSelectProductsScreen.routeName: (context) =>
-              SalesSelectProductsScreen(),
-          SaleInvoiceScrreen.routeName: (context) => const SaleInvoiceScrreen()
+              const SalesSelectProductsScreen(),
+          SaleInvoiceScrreen.routeName: (context) => const SaleInvoiceScrreen(),
+          PaymentCollectionScreen.routeName: (context) =>
+              const PaymentCollectionScreen(),
+          CustomerRegistration.routeName: (context) =>
+              const CustomerRegistration(),
+          ReceiptScreen.receiptScreen: (context) => const ReceiptScreen(),
         });
   }
 }

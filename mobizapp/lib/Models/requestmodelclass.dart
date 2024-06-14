@@ -121,9 +121,10 @@ class Detail {
   int? status;
   String? createdAt;
   String? updatedAt;
-  Null? deletedAt;
+  String? deletedAt;
   int? productId;
   String? productName;
+  String? productCode;
 
   Detail(
       {this.id,
@@ -141,6 +142,7 @@ class Detail {
       this.updatedAt,
       this.deletedAt,
       this.productId,
+      this.productCode,
       this.productName});
 
   Detail.fromJson(Map<String, dynamic> json) {
@@ -160,6 +162,7 @@ class Detail {
     deletedAt = json['deleted_at'];
     productId = json['product_id'];
     productName = json['product_name'];
+    productCode = json['product_code'];
   }
 
   Map<String, dynamic> toJson() {
@@ -180,6 +183,7 @@ class Detail {
     data['deleted_at'] = this.deletedAt;
     data['product_id'] = this.productId;
     data['product_name'] = this.productName;
+    data['product_code'] = this.productCode;
     return data;
   }
 }

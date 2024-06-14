@@ -50,14 +50,16 @@ class Data {
   int? id;
   String? name;
   String? code;
+  String? proImage;
   List<ProductDetail>? productDetail;
 
-  Data({this.id, this.name, this.code, this.productDetail});
+  Data({this.id, this.name, this.code, this.proImage, this.productDetail});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
     code = json['code'];
+    proImage = json['pro_image'];
     if (json['product_detail'] != null) {
       productDetail = <ProductDetail>[];
       json['product_detail'].forEach((v) {
@@ -71,6 +73,7 @@ class Data {
     data['id'] = this.id;
     data['name'] = this.name;
     data['code'] = this.code;
+    data['pro_image'] = this.proImage;
     if (this.productDetail != null) {
       data['product_detail'] =
           this.productDetail!.map((v) => v.toJson()).toList();
@@ -85,8 +88,16 @@ class ProductDetail {
   int? id;
   String? name;
   int? stock;
+  String? price;
+  String? minPrice;
 
-  ProductDetail({this.productId, this.unit, this.id, this.name});
+  ProductDetail(
+      {this.productId,
+      this.unit,
+      this.id,
+      this.name,
+      this.price,
+      this.minPrice});
 
   ProductDetail.fromJson(Map<String, dynamic> json) {
     productId = json['product_id'];
@@ -94,6 +105,8 @@ class ProductDetail {
     id = json['id'];
     name = json['name'];
     stock = json['stock'];
+    price = json['price'];
+    minPrice = json['min_price'];
   }
 
   Map<String, dynamic> toJson() {
@@ -103,6 +116,8 @@ class ProductDetail {
     data['id'] = this.id;
     data['name'] = this.name;
     data['stock'] = this.stock;
+    data['price'] = this.price;
+    data['minPrice'] = this.minPrice;
     return data;
   }
 }

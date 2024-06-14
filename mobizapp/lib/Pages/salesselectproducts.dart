@@ -4,7 +4,8 @@ import 'package:mobizapp/Pages/newvanstockrequests.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../Models/ProductDataModelClass.dart';
-import '../Models/productquantirydetails.dart' as Qty;
+// import '../Models/productquantirydetails.dart' as Qty;
+import '../Models/vanstockquandity.dart' as Qty;
 import '../Models/salesdata.dart';
 import '../Utilities/rest_ds.dart';
 import '../confg/appconfig.dart';
@@ -33,7 +34,9 @@ class _SalesSelectProductsScreenState extends State<SalesSelectProductsScreen> {
   int? id;
   String? name;
 
-  Qty.ProductQuantityDetails qunatityData = Qty.ProductQuantityDetails();
+  Qty.VanStockQuandity qunatityData = Qty.VanStockQuandity();
+
+  //Qty.ProductQuantityDetails qunatityData = Qty.ProductQuantityDetails();
   @override
   void initState() {
     super.initState();
@@ -199,7 +202,6 @@ class _SalesSelectProductsScreenState extends State<SalesSelectProductsScreen> {
             selectedItems.remove(index);
           } else {
             selectedItems.add(index);
-
             addItem(
               data.name!,
               data.code!,
@@ -210,7 +212,7 @@ class _SalesSelectProductsScreenState extends State<SalesSelectProductsScreen> {
               id!,
               data.taxPercentage!,
               num.parse(data.baseUnitDiscount!),
-              data.unitData.result!.data!,
+              data.productDetail!,
               '', //type
               data.price!,
               data.proImage!,
@@ -265,34 +267,23 @@ class _SalesSelectProductsScreenState extends State<SalesSelectProductsScreen> {
                       child: SizedBox(
                         width: SizeConfig.blockSizeHorizontal * 70,
                         child: Text(
-                          data.name!.toUpperCase(),
-                          style: TextStyle(fontSize: AppConfig.paragraphSize),
+                          '${data.code} | ${data.name!.toUpperCase()}',
+                          style:
+                              TextStyle(fontSize: AppConfig.textCaption2Size),
                         ),
                       ),
                     ),
-                    Text(
-                      data.code.toString(),
-                      style: TextStyle(
-                          fontSize: AppConfig.textCaption3Size,
-                          fontWeight: AppConfig.headLineWeight),
-                    ),
                     Row(
                       children: [
-                        for (int i = 0;
-                            i < data.unitData.result!.data!.length;
-                            i++)
+                        for (int i = data.productDetail!.length - 1;
+                            i >= 0;
+                            i--)
                           Text(
-                            (i == 0)
-                                ? '${data.unitData.result!.data![i].units![0].name!}: ${formatDivisionResult(data.unitData.result!.data![i].qty!, 1, data.unitData.result!.data![i].units![0].name!)}'
-                                : (i == 1)
-                                    ? '| ${data.unitData.result!.data![i].units![0].name!}: ${formatDivisionResult(data.unitData.result!.data![i].qty!, 1, data.unitData.result!.data![i].units![0].name!)} '
-                                    : (i == 2)
-                                        ? '| ${data.unitData.result.data![i].units![0].name!}: ${formatDivisionResult(data.unitData.result!.data![i].qty!, 1, data.unitData.result!.data![i].units![0].name!)}'
-                                        : '| ${data.unitData.result.data![i].units![0].name!}: ${formatDivisionResult(data.unitData.result!.data![i].qty!, 1, data.unitData.result!.data![i].units![0].name!)}',
+                            '${data.productDetail![i].name}:${data.productDetail![i].stock} ', //${formatDivisionResult(products.result!.data![0].quandity!, qunatityData.result!.data![i].qty!, '')} ',
                             style: TextStyle(
-                                fontSize: AppConfig.textCaption3Size,
-                                fontWeight: AppConfig.headLineWeight),
-                          )
+                              fontSize: AppConfig.textCaption3Size,
+                            ),
+                          ),
                       ],
                     )
                   ],
@@ -313,7 +304,7 @@ class _SalesSelectProductsScreenState extends State<SalesSelectProductsScreen> {
     if (resJson['data'] != null) {
       products = ProductDataModel.fromJson(resJson);
       for (int i = 0; i < products.data!.length; i++) {
-        _getQuantity(i, products.data![i].id!);
+        _getQuantity();
       }
     } else {
       setState(() {
@@ -322,6 +313,64 @@ class _SalesSelectProductsScreenState extends State<SalesSelectProductsScreen> {
       });
     }
   }
+
+  Future<void> _getQuantity() async {
+    RestDatasource api = RestDatasource();
+    for (var i in products.data!) {
+      for (var j in i.productDetail!) {
+        dynamic resJson = await api.getDetails(
+            '/api/get_van_stock_detail?product_id=${j.productId}&van_id=${AppState().vanId}&unit=${j.unit}',
+            AppState().token); //${AppState().storeId}
+        print('Quan $resJson');
+        if (resJson['status'] == 'success') {
+          qunatityData = Qty.VanStockQuandity.fromJson(resJson);
+          j.stock = (qunatityData.result!.data is List)
+              ? 0
+              : qunatityData.result!.data ?? 0;
+        } else {
+          if (mounted) {
+            CommonWidgets.showDialogueBox(
+                context: context, title: 'Error', msg: 'Something went wrong');
+          }
+        }
+      }
+    }
+
+    // Filter out products with all stocks equal to zero
+    final List<Data> filteredDataList = products.data!.where((product) {
+      return product.productDetail!.any((detail) => detail.stock! > 0);
+    }).toList();
+
+    // Update the products data with the filtered list
+    setState(() {
+      products.data = filteredDataList;
+      _initDone = true;
+    });
+  }
+
+  // Future<void> _getQuantity(int i, int id) async {
+  //   RestDatasource api = RestDatasource();
+  //   dynamic resJson = await api.getDetails(
+  //       '/api/get_product_detail?product_id=$id',
+  //       AppState().token); //${AppState().storeId}
+
+  //   if (resJson['status'] == "success") {
+  //     qunatityData = Qty.ProductQuantityDetails.fromJson(resJson);
+  //     products.data![i].unitData = qunatityData;
+  //     print('Product details dta ${qunatityData.result!.data![0].id}');
+  //     if (i == products.data!.length - 1) {
+  //       Future.delayed(const Duration(seconds: 3), () {
+  //         if (mounted) {
+  //           setState(
+  //             () {
+  //               _initDone = true;
+  //             },
+  //           );
+  //         }
+  //       });
+  //     }
+  //   }
+  // }
 
   void addItem(
     String name,
@@ -367,29 +416,6 @@ class _SalesSelectProductsScreenState extends State<SalesSelectProductsScreen> {
   // Function to remove an item from the list by id
   void removeItem(int id) {
     items.removeWhere((item) => item['id'] == id);
-  }
-
-  Future<void> _getQuantity(int i, int id) async {
-    RestDatasource api = RestDatasource();
-    dynamic resJson = await api.getDetails(
-        '/api/get_product_detail?product_id=$id',
-        AppState().token); //${AppState().storeId}
-
-    if (resJson['status'] == "success") {
-      qunatityData = Qty.ProductQuantityDetails.fromJson(resJson);
-      products.data![i].unitData = qunatityData;
-      if (i == products.data!.length - 1) {
-        Future.delayed(const Duration(seconds: 3), () {
-          if (mounted) {
-            setState(
-              () {
-                _initDone = true;
-              },
-            );
-          }
-        });
-      }
-    }
   }
 
   String formatDivisionResult(int numerator, int denominator, String name) {

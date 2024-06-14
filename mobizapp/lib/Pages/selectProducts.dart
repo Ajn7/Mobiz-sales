@@ -4,7 +4,8 @@ import 'package:mobizapp/Pages/newvanstockrequests.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../Models/ProductDataModelClass.dart';
-import '../Models/productquantirydetails.dart' as Qty;
+//import '../Models/productquantirydetails.dart' as Qty;
+import '../Models/vanstockquandity.dart' as Qty;
 import '../Models/stockData.dart';
 import '../Utilities/rest_ds.dart';
 import '../confg/appconfig.dart';
@@ -28,7 +29,7 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
   List<Map<String, dynamic>> items = [];
   bool _search = false;
 
-  Qty.ProductQuantityDetails qunatityData = Qty.ProductQuantityDetails();
+  Qty.VanStockQuandity qunatityData = Qty.VanStockQuandity();
   @override
   void initState() {
     super.initState();
@@ -187,14 +188,13 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
             selectedItems.remove(index);
           } else {
             selectedItems.add(index);
-
             addItem(
               data.name!,
               data.code!,
               data.id!,
               data.baseUnitQty!,
               data.baseUnitId!,
-              data.unitData.result!.data!,
+              data.productDetail!,
             );
             Navigator.pushReplacementNamed(context, VanStocks.routeName);
           }
@@ -224,7 +224,7 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(15.0),
                     child: FadeInImage(
-                      image:  NetworkImage(
+                      image: NetworkImage(
                           'https://mobiz-shop.yes45.in/uploads/product/${data.proImage}'),
                       placeholder:
                           const AssetImage('Assets/Images/no_image.jpg'),
@@ -245,36 +245,43 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
                       child: SizedBox(
                         width: SizeConfig.blockSizeHorizontal * 70,
                         child: Text(
-                          data.name!.toUpperCase(),
+                          '${data.code} | ${data.name!.toUpperCase()}',
                           style: TextStyle(fontSize: AppConfig.paragraphSize),
                         ),
                       ),
                     ),
-                    Text(
-                      data.code.toString(),
-                      style: TextStyle(
-                          fontSize: AppConfig.textCaption3Size,
-                          fontWeight: AppConfig.headLineWeight),
-                    ),
                     Row(
                       children: [
-                        for (int i = 0;
-                            i < data.unitData.result!.data!.length;
-                            i++)
+                        for (int i = data.productDetail!.length - 1;
+                            i >= 0;
+                            i--)
                           Text(
-                            (i == 0)//data.baseUnitQty!,
-                                ? '${data.unitData.result!.data![i].units![0].name!}: ${formatDivisionResult(data.unitData.result!.data![i].qty!, 1,data.unitData.result!.data![i].units![0].name!)}'
-                                : (i == 1)
-                                    ? '| ${data.unitData.result!.data![i].units![0].name!}: ${formatDivisionResult( data.unitData.result!.data![i].qty!,1, data.unitData.result!.data![i].units![0].name!)} '
-                                    : (i == 2)
-                                        ? '| ${data.unitData.result.data![i].units![0].name!}: ${formatDivisionResult(data.unitData.result!.data![i].qty!,1, data.unitData.result!.data![i].units![0].name!)}'
-                                        : '| ${data.unitData.result.data![i].units![0].name!}: ${formatDivisionResult( data.unitData.result!.data![i].qty!,1, data.unitData.result!.data![i].units![0].name!)}',
+                            '${data.productDetail![i].name}:${data.productDetail![i].stock} ', //${formatDivisionResult(products.result!.data![0].quandity!, qunatityData.result!.data![i].qty!, '')} ',
                             style: TextStyle(
-                                fontSize: AppConfig.textCaption3Size,
-                                fontWeight: AppConfig.headLineWeight),
+                              fontSize: AppConfig.textCaption3Size,
+                            ),
                           ),
                       ],
                     )
+                    // Row(
+                    //   children: [
+                    //     for (int i = 0;
+                    //         i < data.unitData.result!.data!.length;
+                    //         i++)
+                    //       Text(
+                    //         (i == 0) //data.baseUnitQty!,
+                    //             ? '${data.unitData.result!.data![i].units![0].name!}: ${formatDivisionResult(data.unitData.result!.data![i].qty!, 1, data.unitData.result!.data![i].units![0].name!)}'
+                    //             : (i == 1)
+                    //                 ? '| ${data.unitData.result!.data![i].units![0].name!}: ${formatDivisionResult(data.unitData.result!.data![i].qty!, 1, data.unitData.result!.data![i].units![0].name!)} '
+                    //                 : (i == 2)
+                    //                     ? '| ${data.unitData.result.data![i].units![0].name!}: ${formatDivisionResult(data.unitData.result!.data![i].qty!, 1, data.unitData.result!.data![i].units![0].name!)}'
+                    //                     : '| ${data.unitData.result.data![i].units![0].name!}: ${formatDivisionResult(data.unitData.result!.data![i].qty!, 1, data.unitData.result!.data![i].units![0].name!)}',
+                    //         style: TextStyle(
+                    //             fontSize: AppConfig.textCaption3Size,
+                    //             fontWeight: AppConfig.headLineWeight),
+                    //       ),
+                    //   ],
+                    // )
                   ],
                 ),
               ],
@@ -293,7 +300,7 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
     if (resJson['data'] != null) {
       products = ProductDataModel.fromJson(resJson);
       for (int i = 0; i < products.data!.length; i++) {
-        _getQuantity(i, products.data![i].id!);
+        _getQuantity();
       }
     } else {
       setState(() {
@@ -303,8 +310,36 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
     }
   }
 
+  Future<void> _getQuantity() async {
+    RestDatasource api = RestDatasource();
+    for (var i in products.data!) {
+      for (var j in i.productDetail!) {
+        dynamic resJson = await api.getDetails(
+            '/api/get_van_stock_detail?product_id=${j.productId}&van_id=${AppState().vanId}&unit=${j.unit}',
+            AppState().token); //${AppState().storeId}
+        print('Quan $resJson');
+        if (resJson['status'] == 'success') {
+          qunatityData = Qty.VanStockQuandity.fromJson(resJson);
+          j.stock = (qunatityData.result!.data is List)
+              ? 0
+              : qunatityData.result!.data ?? 0;
+        } else {
+          if (mounted) {
+            CommonWidgets.showDialogueBox(
+                context: context, title: 'Error', msg: 'Something went wrong');
+          }
+        }
+      }
+    }
+
+    // Update the products data with the filtered list
+    setState(() {
+      _initDone = true;
+    });
+  }
+
   void addItem(String name, String code, int id, int quantity, int baseUnit,
-      List<Qty.Data> unitData) async {
+      List<dynamic> unitData) async {
     Map<String, dynamic> newItem = {
       "name": name,
       "code": code,
@@ -326,27 +361,6 @@ class _SelectProductsScreenState extends State<SelectProductsScreen> {
   // Function to remove an item from the list by id
   void removeItem(int id) {
     items.removeWhere((item) => item['id'] == id);
-  }
-
-  Future<void> _getQuantity(int i, int id) async {
-    RestDatasource api = RestDatasource();
-    dynamic resJson = await api.getDetails(
-        '/api/get_product_detail?product_id=$id',
-        AppState().token); //${AppState().storeId}
-
-    if (resJson['status'] == "success") {
-      qunatityData = Qty.ProductQuantityDetails.fromJson(resJson);
-      products.data![i].unitData = qunatityData;
-      if (i == products.data!.length - 1) {
-        Future.delayed(const Duration(seconds: 3), () {
-          setState(
-            () {
-              _initDone = true;
-            },
-          );
-        });
-      }
-    }
   }
 
   String formatDivisionResult(int numerator, int denominator, String name) {

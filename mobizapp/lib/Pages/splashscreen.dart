@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobizapp/Pages/homepage.dart';
 import 'package:mobizapp/Pages/loginpage.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+
 
 import '../Models/appstate.dart';
 import '../Utilities/sharepref.dart';
@@ -11,7 +11,7 @@ import '../confg/sizeconfig.dart';
 import '../confg/textconfig.dart';
 
 class SplashScreen extends StatefulWidget {
-  static const routeName = "SplashScreen";
+  static const routeName = "/SplashScreen";
   const SplashScreen({super.key});
 
   @override
@@ -51,7 +51,7 @@ class _SplashScreenState extends State<SplashScreen> {
     appState.buildNumber = json['build_number'];
     appState.userId = json['id'];
     appState.storeId = json['store_id'];
-    appState.roleId = json['rol_id'];
+    appState.routeId = json['rol_id'];
     appState.email = json['email'];
     appState.osType = json['os_type'];
     appState.imageUrl = json['image_url'];
